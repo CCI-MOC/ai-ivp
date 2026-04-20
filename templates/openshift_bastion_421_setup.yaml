@@ -1,0 +1,106 @@
+---
+- name: Setup OpenShift 4.21 Bastion Infrastructure
+  hosts: localhost
+  connection: local
+  become: yes
+  vars:
+    # OpenShift 4.21.0 Specifics
+    ocp_version: "4.21.0"
+    base_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_version }}"
+    bin_dir: "/usr/local/bin"
+    tmp_dir: "/tmp/ocp_install"
+
+  tasks:
+    - name: Create temporary directory for downloads
+      file:
+        path: "{{ tmp_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Install System Utilities and Infrastructure Services
+      dnf:
+        name:
+          - git
+          - jq
+          - nmstate
+          - haproxy
+          - openssh-clients
+          - wget
+          - tar
+          - bind-utils
+        state: present
+
+    - name: Download OpenShift 4.20 Client and Installer
+      get_url:
+        url: "{{ base_url }}/{{ item }}"
+        dest: "{{ tmp_dir }}/{{ item }}"
+      loop:
+        - openshift-client-linux.tar.gz
+        - openshift-install-linux.tar.gz
+
+    - name: Extract oc, kubectl, and openshift-install
+      unarchive:
+        src: "{{ tmp_dir }}/{{ item }}"
+        dest: "{{ bin_dir }}"
+        remote_src: yes
+      loop:
+        - openshift-client-linux.tar.gz
+        - openshift-install-linux.tar.gz
+
+    - name: Ensure OpenShift binaries are executable
+      file:
+        path: "{{ bin_dir }}/{{ item }}"
+        mode: '0755'
+        owner: root
+        group: root
+      loop:
+        - oc
+        - kubectl
+        - openshift-install
+
+    - name: Install Helm 3
+      become: yes
+      block:
+      - name: Download Helm binary header
+        get_url:
+          url: https://get.helm.sh/helm-v3.20.2-linux-amd64.tar.gz
+          dest: /tmp/helm.tar.gz
+          mode: '0644'
+
+      - name: Unarchive Helm binary
+        unarchive:
+          src: /tmp/helm.tar.gz
+          dest: /tmp
+          remote_src: yes
+
+      - name: Move Helm to bin directory
+        copy:
+          src: /tmp/linux-amd64/helm
+          dest: "{{ bin_dir }}/helm"
+          mode: '0755'
+          remote_src: yes
+
+    - name: Enable and Start HAProxy
+      systemd:
+        name: haproxy
+        state: started
+        enabled: yes
+
+    - name: Verify Installations
+      shell: "{{ bin_dir }}/{{ item }}"
+      loop:
+        - "oc version --client"
+        - "openshift-install version"
+        - "helm version --short"
+      register: version_output
+      changed_when: false
+
+    - name: Display Binary Versions
+      debug:
+        msg: "{{ item.stdout }}"
+      loop: "{{ version_output.results }}"
+
+    - name: Cleanup temporary files
+      file:
+        path: "{{ tmp_dir }}"
+        state: absent
