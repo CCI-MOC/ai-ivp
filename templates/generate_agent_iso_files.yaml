@@ -1,0 +1,21 @@
+---
+- name: Generate OpenShift Agent ISO
+  hosts: localhost
+  connection: local
+  vars_files:
+    - generate_agent_iso_files_vars.yaml
+
+  tasks:
+
+    - name: Create install-config.yaml
+      ansible.builtin.copy:
+        dest: "{{ work_dir }}/install-config.yaml"
+        mode: '0755'
+        src: install-config.yaml
+
+    - name: Create agent-config.yaml
+      ansible.builtin.copy:
+        dest: "{{ work_dir }}/agent-config.yaml"
+        mode: '0755'
+        src: agent-config.yaml
+...
