@@ -1,0 +1,13 @@
+---
+# vars file for generate_agent_files
+cluster_name: "ocp-prod"
+base_domain: "example.com"
+ocp_version: "4.14"
+work_dir: "/ocp_agent_install"
+pull_secret: # Paste your full pull secret string here
+ssh_key: # Your public SSH key
+master1_hostname:
+master1_mac:
+rendezvous_ip:
+gateway_ip:
+dns_ip:
