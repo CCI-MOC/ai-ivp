@@ -9,6 +9,7 @@
     base_url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_version }}"
     bin_dir: "/usr/local/bin"
     tmp_dir: "/tmp/ocp_install"
+    sbin_dir: "/usr/sbin"
 
   tasks:
     - name: Create temporary directory for downloads
@@ -28,9 +29,16 @@
           - wget
           - tar
           - bind-utils
+          - httpd 
         state: present
 
-    - name: Download OpenShift 4.20 Client and Installer
+    - name: Start and enable Apache (httpd)
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Download OpenShift 4.21 Client and Installer
       get_url:
         url: "{{ base_url }}/{{ item }}"
         dest: "{{ tmp_dir }}/{{ item }}"
@@ -59,32 +67,25 @@
         - openshift-install
 
     - name: Install Helm 3
-      become: yes
       block:
-      - name: Download Helm binary header
-        get_url:
-          url: https://get.helm.sh/helm-v3.20.2-linux-amd64.tar.gz
-          dest: /tmp/helm.tar.gz
-          mode: '0644'
+        - name: Download Helm binary
+          get_url:
+            url: https://get.helm.sh/helm-v3.20.2-linux-amd64.tar.gz
+            dest: /tmp/helm.tar.gz
+            mode: '0644'
 
-      - name: Unarchive Helm binary
-        unarchive:
-          src: /tmp/helm.tar.gz
-          dest: /tmp
-          remote_src: yes
+        - name: Unarchive Helm binary
+          unarchive:
+            src: /tmp/helm.tar.gz
+            dest: /tmp
+            remote_src: yes
 
-      - name: Move Helm to bin directory
-        copy:
-          src: /tmp/linux-amd64/helm
-          dest: "{{ bin_dir }}/helm"
-          mode: '0755'
-          remote_src: yes
-
-    - name: Enable and Start HAProxy
-      systemd:
-        name: haproxy
-        state: started
-        enabled: yes
+        - name: Move Helm to bin directory
+          copy:
+            src: /tmp/linux-amd64/helm
+            dest: "{{ bin_dir }}/helm"
+            mode: '0755'
+            remote_src: yes
 
     - name: Verify Installations
       shell: "{{ bin_dir }}/{{ item }}"
@@ -92,6 +93,13 @@
         - "oc version --client"
         - "openshift-install version"
         - "helm version --short"
+      register: version_output
+      changed_when: false
+    
+    - name: Verify httpd
+      shell: "{{ sbin_dir }}/{{ item }}"
+      loop:
+        - "httpd -v" # Added httpd verification
       register: version_output
       changed_when: false
 
