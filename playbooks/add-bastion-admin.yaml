@@ -1,0 +1,47 @@
+---
+- name: Provision a Bastion Admin Account
+  hosts: localhost
+  connection: local
+
+  vars:
+    public_key_dir: "../admin_public_keys"
+    sudo_timeout_mins: 30
+
+  vars_files:
+    - ../vars/secrets.yaml
+
+  tasks:
+    - name: Validate input variables
+      ansible.builtin.fail:
+        msg: "Missing required variable 'username'. Usage: -e 'username=jsmith'"
+      when: username is undefined
+
+    - name: Configure sudo with password and timeout for all users in the wheel group
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/wheel_config
+        content: |
+          # Require sudo passsword sudo password for wheel group
+          %wheel ALL=(ALL) ALL
+          # Set the grace period for sudo credentials
+          Defaults:%wheel timestamp_timeout={{ sudo_timeout_mins }}
+        mode: '0440'
+        validate: '/usr/sbin/visudo -cf %s'
+
+    - name: Create the user account and add it to the wheel group
+      ansible.builtin.user:
+        name: "{{ username }}"
+        groups: wheel
+        append: yes
+        shell: /bin/bash
+        state: present
+        create_home: yes
+        password: "{{ temp_sudo_password | password_hash('sha512') }}"
+        update_password: on_create
+        expires: -1
+
+    - name: Copy SSH public key to user .ssh directory
+      ansible.posix.authorized_key:
+        user: "{{ username }}"
+        state: present
+        key: "{{ lookup('file', public_key_dir + '/' + username + '.pub') }}"
+
