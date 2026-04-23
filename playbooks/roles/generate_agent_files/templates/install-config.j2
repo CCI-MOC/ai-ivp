@@ -1,5 +1,20 @@
 apiVersion: v1
 baseDomain: {{ base_domain }}
+compute:
+- name: worker
+  replicas: 0
+controlPlane:
+  name: master
+  replicas: 3
+networking:
+  clusterNetwork:
+  - cidr: {{ cluster_network }}
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: {{ machine_network }}
+  networkType: OVNKubernetes
+  serviceNetwork:
+  - {{ svc_network }}
 fips: true
 metadata:
   name: {{ cluster_name }}
@@ -7,4 +22,3 @@ pullSecret: '{{ pull_secret }}'
 sshKey: '{{ ssh_key }}'
 platform:
   none: {}
-publish: External

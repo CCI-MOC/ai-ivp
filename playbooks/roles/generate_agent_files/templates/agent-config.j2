@@ -2,12 +2,13 @@ apiVersion: v1alpha1
 kind: AgentConfig
 metadata:
   name: {{ cluster_name }}
+rendezvousIP: {{ rendezvous_ip }}
 hosts:
   - hostname: {{ master1_hostname }}
     role: master
     interfaces:
       - name: eno1
-        macAddress: "{{ master1_mac }}"
+        macAddress: {{ master1_mac }}
     networkConfig:
       interfaces:
         - name: eno1
@@ -16,13 +17,63 @@ hosts:
           ipv4:
             enabled: true
             address:
-              - ip: {{ rendezvous_ip }}
+              - ip: {{ master1_ip }}
                 prefixLength: 24
             dhcp: false
       dns-resolver:
         config:
           server:
-            - "{{ dns_ip }}"
+            - {{ dns_ip }}
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}
+            next-hop-interface: eno1
+  - hostname: {{ master2_hostname }}
+    role: master
+    interfaces:
+      - name: eno1
+        macAddress: {{ master2_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ master2_ip }}
+                prefixLength: 24
+            dhcp: false
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}
+            next-hop-interface: eno1
+  - hostname: {{ master3_hostname }}
+    role: master
+    interfaces:
+      - name: eno1
+        macAddress: {{ master3_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ master3_ip }}
+                prefixLength: 24
+            dhcp: false
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}
       routes:
         config:
           - destination: 0.0.0.0/0
