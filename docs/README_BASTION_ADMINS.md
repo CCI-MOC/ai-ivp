@@ -4,7 +4,7 @@ The bastion server is used to install the Infra cluster, and then manage the env
 
 ## Prerequisites:
 
-* A **documented and approved** request to create the new user. These are tracked as GitHub issues in the [admin-access repository](https://github.com/CCI-MOC/access-requests/issues). If you are someone who does this routinely, you should watch that repository.
+* A **documented and approved** request to create the new user. These are tracked as GitHub issues in the [access-requests repository](https://github.com/CCI-MOC/access-requests/issues). If you are someone who does this routinely, you should watch that repository.
 * The contact info, username, and public key for the new user. These should be in the ticket.
 * The IP of the bastion server.
 * The ability to login to the bastion server, OR the ability to login as the root user which should only be done for the first person-specific user account.
