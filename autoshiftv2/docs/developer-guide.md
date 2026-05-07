@@ -1,0 +1,863 @@
+# AutoShiftv2 - Developer Guide
+
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![OpenShift](https://img.shields.io/badge/OpenShift-4.20%2B-red)](https://www.openshift.com/)
+[![RHACM](https://img.shields.io/badge/RHACM-2.15%2B-purple)](https://www.redhat.com/en/technologies/management/advanced-cluster-management)
+
+**Build and manage OpenShift Platform Plus infrastructure as code with policy-driven automation**
+
+## 🚀 Quick Start - Create Your First Policy
+
+Generate and deploy an operator policy in under 5 minutes:
+
+```bash
+# 1. Generate a new operator policy with AutoShift integration and version pinning
+./scripts/generate-operator-policy.sh cert-manager cert-manager-operator --channel stable --namespace cert-manager --version cert-manager.v1.14.4 --add-to-autoshift
+
+# 2. Validate the generated policy
+helm template policies/stable/cert-manager/
+
+# 3. Commit and push - AutoShift will automatically deploy via GitOps
+git add policies/stable/cert-manager/
+git commit -m "Add cert-manager operator policy"
+git push origin main  # or your branch if contributing
+```
+
+Your operator is now being deployed across your clusters! Check the ArgoCD dashboard to monitor progress.
+
+## 📋 Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Developer Setup](#developer-setup)
+- [Creating Your First Policy](#creating-your-first-policy)
+- [Policy Development Guide](#policy-development-guide)
+- [Common Development Tasks](#common-development-tasks)
+- [Testing and Validation](#testing-and-validation)
+- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
+- [Additional Resources](#additional-resources)
+
+## 🏗️ Architecture Overview
+
+AutoShiftv2 orchestrates OpenShift infrastructure through a sophisticated GitOps and policy-driven architecture:
+
+### 1. GitOps Flow - Source to Deployment
+
+```mermaid
+flowchart TD
+    Git[Git Repository<br/>autoshift + policies/stable,certified,community/*]
+    AutoShift[AutoShift Helm Chart<br/>Creates ApplicationSet]
+    Apps[ArgoCD Applications<br/>One per policy]
+    Policies[ACM Policies<br/>Deployed to hub]
+
+    Git -->|Monitors| AutoShift
+    AutoShift -->|Creates| Apps
+    Apps -->|Deploys| Policies
+
+    classDef git fill:#dc3545,stroke:#721c24,stroke-width:2px,color:#ffffff
+    classDef argo fill:#0d6efd,stroke:#084298,stroke-width:2px,color:#ffffff
+    classDef policy fill:#198754,stroke:#0f5132,stroke-width:2px,color:#ffffff
+
+    class Git git
+    class AutoShift,Apps argo
+    class Policies policy
+```
+
+### 2. Policy Processing - Hub Templates to Spoke Deployment
+
+```mermaid
+flowchart TD
+    subgraph Hub [Hub Cluster Processing]
+        HubPolicy[ACM Policy<br/>with hub templates]
+        Labels[Cluster Labels<br/>autoshift.io/*]
+        Processed[Processed Policy<br/>Labels resolved]
+    end
+
+    subgraph Spoke [Spoke Cluster Processing]
+        SpokePolicy[Replicated Policy<br/>Local template processing]
+        Resources[Applied Resources<br/>Operators, configs]
+    end
+
+    Labels -->|Provides values| HubPolicy
+    HubPolicy -->|Templates processed| Processed
+    Processed -->|ACM propagates| SpokePolicy
+    SpokePolicy -->|Applies locally| Resources
+
+    classDef hub fill:#0d6efd,stroke:#084298,stroke-width:2px,color:#ffffff
+    classDef spoke fill:#198754,stroke:#0f5132,stroke-width:2px,color:#ffffff
+
+    class HubPolicy,Labels,Processed hub
+    class SpokePolicy,Resources spoke
+```
+
+### 3. Cluster Targeting - Label-Based Policy Distribution
+
+```mermaid
+flowchart TD
+    Values[AutoShift Values<br/>hubClusterSets, managedClusterSets, clusters]
+    ConfigMaps[ConfigMaps<br/>cluster-set, managed-cluster]
+    ClusterLabels[ManagedCluster Labels<br/>autoshift.io/* applied]
+
+    subgraph Targeting [Policy Targeting]
+        Policy[ACM Policy]
+        Placement[Placement<br/>Label selectors]
+        Binding[PlacementBinding<br/>Links policy to placement]
+    end
+
+    Clusters[Target Clusters<br/>Matching label criteria]
+
+    Values -->|Creates| ConfigMaps
+    ConfigMaps -->|Applied by cluster-labels policy| ClusterLabels
+    ClusterLabels -->|Matched by| Placement
+    Policy -.->|Linked via| Binding
+    Placement -.->|Connected by| Binding
+    Binding -->|Targets| Clusters
+
+    classDef config fill:#f0ab00,stroke:#b07700,stroke-width:2px,color:#151515
+    classDef policy fill:#0d6efd,stroke:#084298,stroke-width:2px,color:#ffffff
+    classDef target fill:#198754,stroke:#0f5132,stroke-width:2px,color:#ffffff
+
+    class Values,ConfigMaps,ClusterLabels config
+    class Policy,Placement,Binding policy
+    class Clusters target
+```
+
+**Key Components & Flow:**
+
+1. **GitOps Foundation**: ArgoCD ApplicationSet monitors `policies/{stable,certified,community}/*` directories in Git repository
+2. **Dynamic Application Creation**: ApplicationSet creates individual ArgoCD Applications for each policy
+3. **Helm Chart Deployment**: Each Application deploys a Helm chart containing ACM Policy + Placement + PlacementBinding
+4. **Hub Template Processing**: ACM processes hub templates on the hub cluster, resolving per-cluster values before replication
+5. **Policy Propagation**: ACM Policy Framework propagates processed policies to target spoke clusters
+6. **Spoke Template Processing**: Policy agents on spoke clusters process any remaining regular templates with local cluster context
+7. **Resource Application**: Final Kubernetes resources are applied on spoke clusters
+
+**Two Configuration Patterns:**
+
+- **Label-based** (operator policies): Labels defined in values files are propagated to ManagedClusters by the `cluster-labels` policy. Hub templates read labels via `{{hub index .ManagedClusterLabels "autoshift.io/key" hub}}` to configure operator subscriptions, channels, etc.
+- **Config-based** (nmstate, cluster-install): Structured YAML config defined in values files is merged by the `cluster-config-maps` policy into rendered-config ConfigMaps. Hub templates read these ConfigMaps via `lookup` + `fromYaml` to generate complex resources like NNCPs and NMStateConfigs.
+
+**Cluster Targeting:**
+- **Placement matching**: Selects target clusters using label expressions and cluster sets
+- **Dynamic behavior**: Same policy template produces different resources per cluster based on labels or config
+
+## 🛠️ Developer Setup
+
+### Prerequisites
+
+| Tool | Version | Installation |
+|------|---------|-------------|
+| OpenShift CLI | Latest | [Download oc](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html/cli_tools/openshift-cli-oc#installing-openshift-cli) |
+| Helm | 3.x | [Install Helm](https://helm.sh/docs/intro/install/) |
+| Git | 2.x+ | Pre-installed on most systems |
+| Access to Hub Cluster | - | Admin or developer access required |
+
+### Repository Setup
+
+```bash
+# Clone the repository (or your fork if contributing)
+git clone https://github.com/auto-shift/autoshiftv2.git
+cd autoshiftv2
+
+# Verify the policy generators work
+./scripts/generate-operator-policy.sh --help
+./scripts/generate-policy.sh --help
+
+# Test operator policy generation
+./scripts/generate-operator-policy.sh test-operator test-operator --channel stable --namespace test-operator
+helm template policies/stable/test-operator/
+rm -rf policies/stable/test-operator/
+
+# Test configuration policy generation
+./scripts/generate-policy.sh test-config --dir policies/stable/test-config --target both
+helm template policies/stable/test-config/
+rm -rf policies/stable/test-config/
+```
+
+### First-Time Setup Validation
+
+```bash
+# Check existing policies
+ls -la policies/
+
+# Validate all existing policies (optional but recommended)
+# Policy charts live at policies/<category>/<chart>/Chart.yaml
+find policies -maxdepth 3 -name Chart.yaml | while read -r chart_file; do
+  policy=$(dirname "$chart_file")
+  echo "Validating $policy..."
+  helm template "$policy" > /dev/null && echo "✓ Valid" || echo "✗ Invalid"
+done
+```
+
+## 💡 Creating Your First Policy
+
+### Step 1: Research Your Operator
+
+Before generating a policy, gather key information:
+
+```bash
+# Search for operator in OperatorHub
+oc get packagemanifests -n openshift-marketplace | grep -i your-operator
+
+# Get operator details
+oc describe packagemanifest your-operator -n openshift-marketplace
+```
+
+### Step 2: Generate the Policy
+
+```bash
+# For cluster-scoped operators (most common)
+./scripts/generate-operator-policy.sh \
+  my-component \
+  my-operator-subscription \
+  --channel stable \
+  --namespace my-component \
+  --add-to-autoshift
+
+# For namespace-scoped operators
+./scripts/generate-operator-policy.sh \
+  my-component \
+  my-operator-subscription \
+  --channel stable \
+  --namespace my-component \
+  --namespace-scoped \
+  --add-to-autoshift
+```
+
+### Step 3: Understand Generated Files
+
+Your new policy directory (`policies/stable/my-component/`) contains:
+
+```
+policies/stable/my-component/
+├── Chart.yaml                          # Helm chart metadata
+├── values.yaml                         # Default configuration
+├── README.md                           # Policy documentation
+└── templates/
+    └── policy-my-component-operator-install.yaml  # RHACM Policy
+```
+
+### Step 4: Add Operator Configuration
+
+Most operators need additional configuration after installation. Use the configuration policy generator to scaffold the template:
+
+```bash
+# 1. Explore installed CRDs
+oc get crds | grep my-component
+
+# 2. Generate a configuration policy (adds to existing policy directory)
+./scripts/generate-policy.sh my-component-config \
+  --dir policies/stable/my-component \
+  --target both \
+  --dependency my-component-operator-install
+
+# 3. Edit the generated template - replace the placeholder ConfigMap with your actual resource
+vi policies/stable/my-component/templates/policy-my-component-config.yaml
+```
+
+The generator creates a complete policy with the correct structure (Policy + ConfigurationPolicy + Placement + PlacementBinding), `evaluationInterval`, dry-run support, and cluster tolerations. You can also generate standalone configuration policies in a new directory:
+
+```bash
+# Create a new policy directory for non-operator configuration
+./scripts/generate-policy.sh my-cluster-config --dir policies/stable/my-cluster-config --target spoke
+
+# Or use interactive mode to be guided through the options
+./scripts/generate-policy.sh
+```
+
+See [generate-policy.sh documentation](../scripts/README.md#generate-policysh) for all options including placement targets (`hub`, `spoke`, `both`, `all`) and dependency management.
+
+### Step 5: Test and Deploy
+
+```bash
+# Validate your policy renders correctly
+helm template policies/stable/my-component/
+
+# Commit and push to deploy
+git add policies/stable/my-component/
+git commit -m "Add my-component operator with configuration"
+git push
+
+# Monitor deployment in ArgoCD
+oc get applications -n openshift-gitops | grep my-component
+```
+
+## 📚 Policy Development Guide
+
+### Policy Development Workflow
+
+```mermaid
+flowchart LR
+    A[Research Operator] --> B[Generate Policy]
+    B --> C[Add Configuration]
+    C --> D[Test Locally]
+    D --> E[Deploy to Dev]
+    E --> F[Validate]
+    F --> G[Promote to Prod]
+```
+
+### Working with Hub Template Functions
+
+AutoShiftv2 uses RHACM hub templates to access cluster labels dynamically:
+
+```yaml
+# Access cluster labels for dynamic configuration
+channel: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/my-component-channel" | default "stable" {{ "hub}}" }}'
+
+# Conditional configuration based on labels
+'{{ "{{hub" }} $clusterType := index .ManagedClusterLabels "autoshift.io/cluster-type" | default "development" {{ "hub}}" }}'
+'{{ "{{hub" }} if eq $clusterType "production" {{ "hub}}" }}'
+  replicas: 5
+'{{ "{{hub" }} else {{ "hub}}" }}'
+  replicas: 1
+'{{ "{{hub" }} end {{ "hub}}" }}'
+
+# Using subscription name from labels
+name: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/my-component-subscription-name" | default "my-component-operator" {{ "hub}}" }}'
+```
+
+### Hub Template Pitfalls
+
+#### Trim Markers (`{{-` / `{{hub-`) — The Indentation Rule
+
+**How `{{-` works:** It trims ALL whitespace (spaces, tabs, newlines) to the LEFT of the template tag until it hits non-whitespace content.
+
+**The critical rule:** Inside YAML block scalars (`|`), `{{-` template directives MUST be at the **same indentation level** as the content lines around them. If a `{{-` directive is at a shallower indent than the content above, the left-trim eats past the newline into the previous content line, merging two lines into one and producing invalid YAML.
+
+```yaml
+# WRONG — directive at 16 spaces, content at 20 spaces
+# The {{- eats 4 extra spaces into the previous content line, merging the lines
+                    spec:
+                      imageSetRef:
+                        name: {{ "{{" }} $imageSet {{ "}}" }}
+                {{ "{{-" }} if $condition {{ "}}" }}
+                      mirrorRegistryRef: ...
+# Resolves to: "name: value      mirrorRegistryRef:" — broken YAML!
+
+# CORRECT — directive aligned with content at 20 spaces
+                    spec:
+                      imageSetRef:
+                        name: {{ "{{" }} $imageSet {{ "}}" }}
+                    {{ "{{-" }} if $condition {{ "}}" }}
+                      mirrorRegistryRef: ...
+# Resolves to clean, separate lines
+```
+
+**Best practice:** Always use `{{-` for clean output. Just ensure the `{{-` directive is indented to match the surrounding content lines in the block scalar.
+
+#### `toYaml` Requires `autoindent`
+
+**Never use `toYaml` without `autoindent`** in `object-templates-raw`. Plain `toYaml` outputs at column 0, which terminates any enclosing YAML block scalar (`|`) and corrupts the document. `autoindent` detects the surrounding indentation level and preserves it.
+
+```yaml
+# WRONG — breaks out of the block scalar
+{{ "{{" }} $myDict | toYaml {{ "}}" }}
+
+# CORRECT — maintains indentation
+{{ "{{" }} $myDict | toYaml | autoindent {{ "}}" }}
+```
+
+#### Comments in object-templates-raw
+
+- `{{/* comment */}}` (Go-style, no trim) — **recommended**. Leaves a whitespace-only line that `{{-` trims naturally.
+- `{{- /* */ -}}` (trim markers) — **dangerous**. Merges adjacent lines.
+- `# YAML comment` — survives into output. Can merge with subsequent template lines.
+- **Hub templates do NOT support comments.** `{{hub /* comment */ hub}}` is invalid and will cause a parse error. Only use Go-style comments (`{{/* */}}`) outside of `{{hub ... hub}}` delimiters.
+
+#### Other Gotchas
+
+**`fromYaml`, `fromJson`, `toYaml`, `toJson` work in hub templates.** This enables reading structured data from ConfigMaps directly:
+
+```yaml
+{{ "{{hub-" }} $cm := (lookup "v1" "ConfigMap" $ns $name) {{ "hub}}" }}
+{{ "{{hub-" }} $config := (index ($cm.data | default dict) "config" | default "" | fromYaml) {{ "hub}}" }}
+```
+
+**`trimPrefix` and `trimSuffix` are not available** in ACM hub templates. Use `replace` instead:
+
+```yaml
+# Use this:
+{{ "{{hub" }} $name := (replace "managed-cluster-config." "" $cmName) {{ "hub}}" }}
+# Not this (will error):
+{{ "{{hub" }} $name := (trimPrefix "managed-cluster-config." $cmName) {{ "hub}}" }}
+```
+
+**`lookup` returns a Go map, not a string.** Use `| default dict` to safely handle missing resources:
+
+```yaml
+{{ "{{hub" }} $cm := (lookup "v1" "ConfigMap" $ns $name) | default dict {{ "hub}}" }}
+{{ "{{hub" }} $data := (index $cm "data" | default dict) {{ "hub}}" }}
+```
+
+**Mixing hub and regular templates** is supported. Hub templates resolve first (on the hub), producing literal text. That text is then evaluated as a regular Go template on the managed cluster. This enables hub-side config injection combined with managed-cluster-side lookups.
+
+The key pattern: a hub template can inject a value as a literal string, and a regular template on the spoke can use that string in a `lookup` or other expression. For example, the nmstate NNCP policy uses hub templates to read host config from the hub, then a regular template to look up the cluster's DNS domain on the spoke:
+
+```yaml
+object-templates-raw: |
+  {{/*  Hub resolves this — reads config from rendered-config ConfigMap on the hub */}}
+  {{ "{{hub" }} $cm := (lookup "v1" "ConfigMap" "policies-autoshift" (printf "%s.rendered-config" .ManagedClusterName)) {{ "hub}}" }}
+  {{ "{{hub-" }} $config := (index ($cm.data | default dict) "config" | default "" | fromYaml) {{ "hub}}" }}
+  {{ "{{hub-" }} $hosts := (index $config "hosts" | default dict) {{ "hub}}" }}
+  {{/*  Spoke resolves this — looks up DNS config on the managed cluster */}}
+  {{ "{{" }} $clusterDomain := ((lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain | default "") {{ "}}" }}
+  {{/*  Hub injects the hostname string, spoke provides the domain */}}
+  {{ "{{hub-" }} range $hostname, $host := $hosts {{ "hub}}" }}
+      kubernetes.io/hostname: {{ "{{hub" }} $hostname {{ "hub}}" }}.{{ "{{" }} $clusterDomain {{ "}}" }}
+  {{ "{{hub-" }} end {{ "hub}}" }}
+```
+
+After hub resolution for a cluster with `master-0` in its hosts, the spoke sees:
+
+```yaml
+  {{ "{{" }} $clusterDomain := ((lookup "config.openshift.io/v1" "DNS" "" "cluster").spec.baseDomain | default "") {{ "}}" }}
+      kubernetes.io/hostname: master-0.{{ "{{" }} $clusterDomain {{ "}}" }}
+```
+
+The spoke then resolves `$clusterDomain` via its own DNS lookup, producing:
+
+```yaml
+      kubernetes.io/hostname: master-0.my-cluster.example.com
+```
+
+### Label-Based Configuration
+
+Labels are configured in AutoShift values files and propagated to clusters by the cluster-labels policy:
+
+```yaml
+# In autoshift/values/clustersets/hub.yaml - configure labels for hub clusterset
+hubClusterSets:
+  hub:
+    labels:
+      my-component: 'true'
+      my-component-subscription-name: 'my-component-operator'
+      my-component-channel: 'stable'
+
+# In autoshift/values/clustersets/managed.yaml - configure labels for managed clusterset
+managedClusterSets:
+  managed:
+    labels:
+      my-component: 'true'
+      my-component-subscription-name: 'my-component-operator'
+      my-component-channel: 'fast'
+# Individual cluster overrides in autoshift/values/clusters/my-cluster.yaml
+clusters:
+  prod-cluster-1:
+    labels:
+      my-component-channel: 'stable-1.2'  ```
+
+Configuration precedence: **Individual Cluster > ClusterSet > Default Values**
+
+### Dependency Management
+
+AutoShift handles dependencies through logical ordering and shared placement rules. For explicit dependencies, add to policy spec.dependencies section like the example below:
+
+```yaml
+# In policies/stable/my-component/README.md
+## Dependencies
+
+This policy depends on:
+- OpenShift Data Foundation (ODF) - provides storage for my-component
+- Loki - provides logging infrastructure
+
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-my-component-install
+  namespace: {{ .Values.policy_namespace }}
+spec:
+  dependencies:
+    - name: policy-storage-cluster-test
+      namespace: {{ .Values.policy_namespace }}
+      apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: Policy
+    - name: policy-loki-operator-install
+      namespace: {{ .Values.policy_namespace }}
+      apiVersion: policy.open-cluster-management.io/v1
+      compliance: Compliant
+      kind: Policy
+
+## Deployment Order
+
+1. ODF must be running before deploying my-component
+2. Loki should be installed
+```
+
+## 🔧 Common Development Tasks
+
+### Updating an Existing Policy
+
+```bash
+# 1. Make changes to policy templates
+vi policies/stable/my-component/templates/policy-my-component-config.yaml
+
+# 2. Validate changes
+helm template policies/stable/my-component/
+
+# 3. Update with different label values
+vi autoshift/values/clustersets/sbx.yaml
+vi autoshift/values/clustersets/hub.yaml
+
+# 4. Commit and deploy
+git add policies/stable/my-component/
+git add autoshift/
+git commit -m "Update my-component configuration"
+git push
+
+# 5. Validate on sandbox cluster that is pointing to your branch
+
+```
+
+### Debugging Policy Issues
+
+```bash
+# Check policy status
+oc get policies -A | grep my-component
+
+# View policy details - namespace can be found from previous command
+oc describe policy policy-my-component-operator-install -n policies-autoshift
+
+# View ArgoCD sync status
+oc get applications -n openshift-gitops my-component -o yaml
+```
+
+### Working with Disconnected Environments
+
+Disconnected mirror configuration is centralized in `config.disconnected` within cluster or clusterset values files. This single block drives both install-time (mirrorRegistryRef, ClusterImageSet, InfraEnv CA) and post-install (IDMS/ICSP, CatalogSources) mirror config.
+
+```yaml
+# In autoshift/values/clusters/my-cluster.yaml or clustersets/managed.yaml
+config:
+  disconnected:
+    mirrorRegistry:
+      host: 'mirror.example.com:5000'            # registry host:port
+      path: 'ocp'                                 # optional, image path prefix
+      caRef:                                      # reference a hub ConfigMap for CA
+        name: 'cluster-ca-bundle'
+        key: 'ca-bundle.crt'
+        namespace: 'cluster-install-secrets'
+      mirrors:                                    # IDMS — digest-based (Red Hat signed content)
+        - source: quay.io/openshift-release-dev/ocp-release
+          mirror: openshift/release-images
+        - source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+          mirror: openshift/release
+        - source: registry.redhat.io
+        - source: quay.io
+        - source: registry.access.redhat.com
+      tagMirrors:                                 # ITMS — tag-based (certified/unsigned ISV operators)
+        - source: registry.connect.redhat.com
+        - source: registry.gitlab.com
+        - source: docker.io
+    disableDefaultCatalogs: true                  # disable default OperatorHub
+    catalogs:                                     # name = {source}-{mirror-catalog-suffix label}
+      - source: redhat-operators
+        imagePath: redhat/redhat-operator-index
+        tag: v4.20
+        publisher: Red Hat
+```
+
+**Labels still required** for operator source switching (OperatorPolicy can only read labels):
+```yaml
+labels:
+  disconnected-mirror: 'true'
+  mirror-catalog-suffix: 'mirror'
+```
+
+**What it configures:**
+- **cluster-install**: mirrorRegistryRef ConfigMap (registries.conf + CA), AgentClusterInstall, InfraEnv additionalTrustBundle, ClusterImageSet releaseImage pointing to mirror
+- **disconnected-mirror**: IDMS/ICSP, CatalogSources (name = `{source}-{suffix}`), OperatorHub disable
+- **Operator policies**: source ternary reads `disconnected-mirror` + `mirror-catalog-suffix` labels
+
+**ClusterImageSet note:** The Assisted Installer does NOT use IDMS — the ClusterImageSet `releaseImage` must point directly to the mirror registry. AutoShift handles this automatically when `disconnected.mirrorRegistry.url` is set.
+
+```bash
+# Generate ImageSet for disconnected environments
+bash scripts/generate-imageset-config.sh autoshift/values/clustersets/hub.yaml,autoshift/values/clustersets/sbx.yaml \
+  --output imageset-multi-env.yaml
+```
+
+### AutoShift Scripts and Label Requirements
+
+AutoShift includes scripts that dynamically discover operators from your values files. These scripts rely on specific label patterns to identify operators:
+
+#### Required Labels for Operators
+
+For each enabled operator, you **must** define all of these labels:
+
+```yaml
+hubClusterSets:
+  hub:
+    labels:
+      # Enable the operator
+      my-operator: 'true'
+
+      # REQUIRED: These labels are needed for scripts to detect the operator
+      my-operator-subscription-name: 'my-operator-package'  # OLM package name
+      my-operator-channel: 'stable'                          # Operator channel
+      my-operator-source: 'redhat-operators'                 # Catalog source
+      my-operator-source-namespace: 'openshift-marketplace'  # Catalog namespace
+```
+
+#### Scripts That Use These Labels
+
+| Script | Purpose | How It Uses Labels |
+|--------|---------|-------------------|
+| `generate-imageset-config.sh` | Generates ImageSetConfiguration for oc-mirror | Scans for `{operator}-subscription-name` entries to identify which operators to include in the mirror set |
+| `update-operator-channels.sh` | Updates operator channels from catalog | Uses `{operator}-subscription-name` to map labels to OLM package names and find the latest channels |
+
+#### Why subscription-name Is Required
+
+The `{operator}-subscription-name` label serves as the **canonical key** that links:
+1. **Label name** (e.g., `gitops`) → Used for enabling/disabling operators
+2. **OLM package name** (e.g., `openshift-gitops-operator`) → Used in Subscriptions and mirroring
+3. **Policy directory** → Scripts locate the policy by matching the package name
+
+Without the subscription-name label, scripts cannot:
+- Include the operator in ImageSetConfiguration for disconnected mirroring
+- Update the operator's channel from the catalog
+- Map between the label and the actual OLM package
+
+#### Example: Minimal Configuration
+
+```yaml
+# Correct - scripts will detect this operator
+gitops: 'true'
+gitops-subscription-name: openshift-gitops-operator
+gitops-channel: gitops-1.18
+gitops-source: redhat-operators
+gitops-source-namespace: openshift-marketplace
+
+# Incorrect - scripts will NOT detect this operator (subscription-name missing)
+gitops: 'true'
+# gitops-subscription-name: openshift-gitops-operator  # Commented out!
+gitops-channel: gitops-1.18
+```
+
+## 🧪 Testing and Validation
+
+### Local Validation
+
+```bash
+# Validate single policy
+helm template policies/stable/my-component/ | oc apply --dry-run=client -f -
+
+# Validate all policies
+find policies/ -name "Chart.yaml" -exec dirname {} \; | while read policy; do
+  echo "Testing $policy..."
+  helm template "$policy" > /dev/null 2>&1 || echo "FAILED: $policy"
+done
+```
+
+### Compliance Validation
+
+```bash
+# Check policy compliance across clusters
+oc get policies -A \
+  -o custom-columns=NAME:.metadata.name,COMPLIANT:.status.compliant
+
+# Get detailed compliance status
+oc get policyreports -A
+```
+
+## 🤝 Contributing
+
+### Contribution Workflow
+
+1. **Fork and Clone**
+   ```bash
+   # First, fork the repository on GitHub web interface:
+   # Navigate to: https://github.com/auto-shift/autoshiftv2
+   # Click "Fork" button in the top right
+
+   # Then clone your fork
+   git clone https://github.com/YOUR-USERNAME/autoshiftv2.git
+   cd autoshiftv2
+
+   # Add upstream remote to keep your fork in sync
+   git remote add upstream https://github.com/auto-shift/autoshiftv2.git
+   ```
+
+2. **Create Feature Branch**
+   ```bash
+   git checkout -b feature/add-my-operator-policy
+   ```
+
+3. **Generate and Develop Policy**
+   ```bash
+   ./scripts/generate-operator-policy.sh my-operator my-operator --channel stable --namespace my-operator
+   # Add operator-specific configuration
+   ```
+
+4. **Test Thoroughly**
+   ```bash
+   helm template policies/stable/my-operator/
+   # Deploy and validate in test environment
+   ```
+
+5. **Submit Pull Request**
+   ```bash
+   git add policies/stable/my-operator/
+   git commit -m "Add my-operator policy with configuration"
+   git push origin feature/add-my-operator-policy
+   ```
+
+   After pushing, create a pull request via GitHub web interface:
+   - Navigate to your fork: `https://github.com/YOUR-USERNAME/autoshiftv2`
+   - GitHub will show a banner "Compare & pull request" for your recent branch
+   - Or manually go to: `https://github.com/auto-shift/autoshiftv2/compare/main...YOUR-USERNAME:feature/add-my-operator-policy`
+   - Fill out the PR template with a clear title and description
+
+### Code Standards
+
+- ✅ Use policy generators for new policies (`generate-operator-policy.sh` for operators, `generate-policy.sh` for configuration)
+- ✅ Include comprehensive README.md for each policy
+- ✅ Follow existing naming conventions
+- ✅ Test with `helm template` before committing
+- ✅ Add subscription-name labels for all operators
+- ✅ Document any special configuration requirements
+
+### Pull Request Checklist
+
+- [ ] Policy generated using `generate-operator-policy.sh` or `generate-policy.sh`
+- [ ] Subscription name and channel specified
+- [ ] Configuration policies added if needed
+- [ ] README.md updated with usage instructions
+- [ ] Tested with `helm template`
+- [ ] Deployed and validated in test environment
+- [ ] No hardcoded values (use templates)
+- [ ] Add Labels to AutoShift Values files
+
+## 🔍 Troubleshooting
+
+### Common Issues and Solutions
+
+| Issue | Solution |
+|-------|----------|
+| Policy not applying to cluster | Check cluster labels: `oc get managedcluster $CLUSTER_NAME -o yaml` |
+| Operator installation failing | Check OperatorPolicy status: `oc describe operatorpolicy OPERATOR_POLICY_NAME -n $CLUSTER_NAME` |
+| Template rendering errors | Check policy status: `oc describe policy POLICY_NAME -n policies-autoshift` |
+| ArgoCD sync failures | Check application status: `oc get applications -n openshift-gitops POLICY_NAME -o yaml` |
+| Policy stuck in NonCompliant | Check OperatorPolicy or ConfigurationPolicy status (see debug commands) |
+| Configuration not applied | Check ConfigurationPolicy status: `oc describe configurationpolicy CONFIG_POLICY_NAME -n $CLUSTER_NAME` |
+| Hub template processing issues | View policy propagator logs (see debug commands) |
+
+### Debug Commands
+
+```bash
+# Set cluster name variable for your environment
+# Find your cluster name if you don't know it
+oc get managedclusters
+export CLUSTER_NAME="local-cluster"  # Replace with your actual cluster name
+
+# 1. FIRST: Check all policies and their compliance status
+oc get policies -A
+
+# 2. Check specific policy resource status
+
+# For operator installation issues:
+oc get operatorpolicy -A
+oc describe operatorpolicy OPERATOR_POLICY_NAME -n $CLUSTER_NAME
+
+# For configuration/non-operator issues:
+oc get configurationpolicy -A
+oc describe configurationpolicy CONFIG_POLICY_NAME -n $CLUSTER_NAME
+
+# 3. Check specific policy details (use actual namespace from step 1)
+oc describe policy POLICY_NAME -n policies-autoshift
+
+# 4. Check ArgoCD application status
+oc get applications -n openshift-gitops
+
+# 5. View specific ArgoCD application details
+oc get application autoshift-POLICY_NAME -n openshift-gitops -o yaml
+
+# 6. Check cluster labels (hub template variables)
+oc get managedcluster $CLUSTER_NAME -o yaml
+
+# 7. View ACM policy propagator logs
+oc logs -n open-cluster-management deployment/grc-policy-propagator
+
+# 8. Check placement decisions (which clusters policies target)
+oc get placementdecisions -A
+
+# 9. View cluster import and connectivity status
+oc get managedclusters
+
+# 10. Check package manifests for operator details
+oc get packagemanifests -n openshift-marketplace | grep OPERATOR_NAME
+oc describe packagemanifest OPERATOR_NAME -n openshift-marketplace
+
+# 11. General policy controller logs
+oc logs -n open-cluster-management-agent-addon deployment/config-policy-controller
+
+# 12. Check events in operator namespaces
+oc get events -n OPERATOR_NAMESPACE --sort-by='.lastTimestamp'
+```
+
+### Finding Non-Compliant Policies
+
+```bash
+# Find NonCompliant policies
+oc get policies -A | grep "NonCompliant"
+
+# Find policies with missing/blank compliance status (excluding header)
+oc get policies -A | grep -v "Compliant" | grep -v "COMPLIANCE STATE"
+
+# Find NonCompliant OperatorPolicy resources
+oc get operatorpolicy -A -o custom-columns="NAMESPACE:.metadata.namespace,NAME:.metadata.name,COMPLIANT:.status.compliant" | grep "NonCompliant"
+
+# Find NonCompliant ConfigurationPolicy resources
+oc get configurationpolicy -A -o custom-columns="NAMESPACE:.metadata.namespace,NAME:.metadata.name,COMPLIANT:.status.compliant" | grep "NonCompliant"
+
+# Alternative: Show all and manually review
+echo "=== All Policies ==="
+oc get policies -A
+echo "=== OperatorPolicy Status ==="
+oc get operatorpolicy -A -o custom-columns="NAMESPACE:.metadata.namespace,NAME:.metadata.name,COMPLIANT:.status.compliant"
+echo "=== ConfigurationPolicy Status ==="
+oc get configurationpolicy -A -o custom-columns="NAMESPACE:.metadata.namespace,NAME:.metadata.name,COMPLIANT:.status.compliant"
+
+# Get details for a specific non-compliant policy
+POLICY_NAME="policy-acs-operator-install"  # Example policy name
+POLICY_NAMESPACE="policies-autoshift"
+
+# Check the main policy status
+oc describe policy $POLICY_NAME -n $POLICY_NAMESPACE
+
+# Find related OperatorPolicy resources for this policy
+oc get operatorpolicy -A -o json | jq -r '.items[] | select(.metadata.labels["policy.open-cluster-management.io/policy"] == "'$POLICY_NAMESPACE'.'$POLICY_NAME'") | "\(.metadata.namespace)/\(.metadata.name)"'
+
+# Find related ConfigurationPolicy resources for this policy
+oc get configurationpolicy -A -o json | jq -r '.items[] | select(.metadata.labels["policy.open-cluster-management.io/policy"] == "'$POLICY_NAMESPACE'.'$POLICY_NAME'") | "\(.metadata.namespace)/\(.metadata.name)"'
+
+# Example: Find all resources related to ACS operator policy
+POLICY_NAME="policy-acs-operator-install"
+echo "=== Related OperatorPolicy resources ==="
+oc get operatorpolicy -A -o json | jq -r '.items[] | select(.metadata.labels["policy.open-cluster-management.io/policy"] == "policies-autoshift.'$POLICY_NAME'") | "\(.metadata.namespace)/\(.metadata.name)"'
+
+echo "=== Related ConfigurationPolicy resources ==="
+oc get configurationpolicy -A -o json | jq -r '.items[] | select(.metadata.labels["policy.open-cluster-management.io/policy"] == "policies-autoshift.'$POLICY_NAME'") | "\(.metadata.namespace)/\(.metadata.name)"'
+
+# Describe the related resources found above (replace with actual names from commands above)
+oc describe operatorpolicy install-operator-acs -n $CLUSTER_NAME
+oc describe configurationpolicy managed-cluster-security-ns -n $CLUSTER_NAME
+```
+
+## 📖 Additional Resources
+
+### Documentation
+- [Policy Quick Start Documentation](../scripts/README.md)
+- [OpenShift GitOps Documentation](https://docs.openshift.com/container-platform/latest/cicd/gitops/understanding-openshift-gitops.html)
+- [RHACM Policy Framework](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/)
+
+### Training
+- [DO480: Multicluster Management with Red Hat OpenShift Platform Plus](https://www.redhat.com/en/services/training/do480-multicluster-management-red-hat-openshift-platform-plus)
+
+### Community
+- [GitHub Issues](https://github.com/auto-shift/autoshiftv2/issues) - Report bugs or request features
+- [Discussions](https://github.com/auto-shift/autoshiftv2/discussions) - Ask questions and share ideas
+
+---
+
+**Ready to contribute?** Start by [creating your first policy](#creating-your-first-policy) or explore our [existing policies](../policies/) for examples!

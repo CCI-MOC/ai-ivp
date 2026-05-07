@@ -1,0 +1,136 @@
+{{- include "autoshift.validate-cluster-install" . }}
+{{- include "autoshift.validate-naming" . }}
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: "{{ .Release.Name }}-policies"
+  namespace: {{ .Values.gitopsNamespace }}
+  labels:
+    velero.io/exclude-from-backup: "true"
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  {{- if .Values.autoshiftOciRegistry }}
+  # OCI Registry mode - deploy from published Helm charts
+  # Policy list is read from bundled files/policy-list.txt file (generated at release time)
+  - list:
+      elements:
+      {{- $policyList := .Files.Get "files/policy-list.txt" | trim | split "\n" }}
+      {{- range $policyList }}
+      {{- if not (has . $.Values.excludePolicies) }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+  {{- else }}
+  # Git mode - discover policies from Git repository
+  - git:
+      repoURL: {{ .Values.autoshiftGitRepo }}
+      revision: {{ .Values.autoshiftGitBranchTag }}
+      directories:
+      - path: 'policies/stable/*'
+      - path: 'policies/certified/*'
+      - path: 'policies/community/*'
+      - path: 'policies/stable/cluster-config-maps'
+        exclude: true
+      - path: 'policies/stable/cluster-labels'
+        exclude: true
+      - path: 'policies/certified'
+        exclude: true
+      - path: 'policies/community'
+        exclude: true
+      - path: 'policies/stable'
+        exclude: true
+      {{- if .Values.excludePolicies }}
+      {{- range .Values.excludePolicies }}
+      - path: 'policies/*/{{ . }}'
+        exclude: true
+      {{- end }}
+      {{- end }}
+  {{- end }}
+  template:
+    metadata:
+      {{- if .Values.autoshiftOciRegistry }}
+      name: '{{ .Release.Name }}-{{"{{"}} .name {{"}}"}}'
+      {{- else }}
+      name: '{{ .Release.Name }}-{{"{{"}} .path.basename {{"}}"}}'
+      {{- end }}
+      labels:
+        app: "{{ .Release.Name }}-policies"
+        velero.io/exclude-from-backup: "true"
+    spec:
+      project: default
+      revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 3 }}
+      sources: 
+        - repoURL: {{ (.Values.autoshiftValues).repoUrl | default .Values.autoshiftGitRepo }}
+          targetRevision: {{ (.Values.autoshiftValues).targetRevision | default .Values.autoshiftGitBranchTag }}
+          ref: values
+        {{- if .Values.autoshiftOciRegistry }}
+        - path: .
+          repoURL: {{ .Values.autoshiftOciRepo }}/{{"{{"}} .name {{"}}"}}
+          targetRevision: {{ .Values.autoshiftOciVersion | default "latest" }}
+        {{- else }}
+        # Git mode - use path in Git repository
+        - path: '{{"{{"}} .path.path {{"}}"}}'
+          repoURL: {{ .Values.autoshiftGitRepo }}
+          targetRevision: {{ .Values.autoshiftGitBranchTag }}
+        {{- end }}
+          helm:
+            valueFiles:
+              {{- if .Values.autoshiftOciRegistry }}
+              - $values/policies/{{ "{{" }} .name {{ "}}" }}/values.yaml
+              {{- else }}
+              - $values/{{ "{{" }} .path.path {{ "}}" }}/values.yaml
+              {{- end }}
+            valuesObject:
+              {{- $clusterSetSuffix := "" }}
+              {{- if .Values.versionedClusterSets }}
+                {{- $versionTag := "" }}
+                {{- if .Values.autoshiftOciRegistry }}
+                  {{- $versionTag = .Values.autoshiftOciVersion | default "latest" }}
+                {{- else }}
+                  {{- $versionTag = .Values.autoshiftGitBranchTag | default "main" }}
+                {{- end }}
+                {{- /* Sanitize for DNS: replace dots and slashes with dashes, lowercase */ -}}
+                {{- $clusterSetSuffix = printf "-%s" ($versionTag | replace "." "-" | replace "/" "-" | lower) }}
+              {{- end }}
+              gitopsNamespace: {{ .Values.gitopsNamespace }}
+              selfManagedHubSet: {{ .Values.selfManagedHubSet }}{{ $clusterSetSuffix }}
+              policy_namespace: {{ printf "policies-%s" .Release.Name }}
+              clusterSetSuffix: {{ $clusterSetSuffix }}
+              autoshift:
+                dryRun: {{ ((.Values.autoshift).dryRun) | default false }}
+                evaluationInterval:
+                  compliant: {{ (((.Values.autoshift).evaluationInterval).compliant) | default "10m" }}
+                  noncompliant: {{ (((.Values.autoshift).evaluationInterval).noncompliant) | default "30s" }}
+              {{- if .Values.hubClusterSets }}
+              hubClusterSets:
+              {{-  range $cluster, $clustervalue := .Values.hubClusterSets }}
+                {{ $cluster }}{{ $clusterSetSuffix }}:
+                  labels:
+                    self-managed: '{{ index $clustervalue.labels "self-managed" | default "true" }}'
+              {{- end }}
+              {{- end }}
+              {{- if .Values.managedClusterSets }}
+              managedClusterSets:
+              {{-  range $cluster, $clustervalue := .Values.managedClusterSets }}
+                {{ $cluster }}{{ $clusterSetSuffix }}:
+                  labels: {}
+              {{- end }}
+              {{- end }}
+      ignoreDifferences:
+      - group: "apps"
+        kind: "Project"
+        jsonPointers:
+        - /metadata/annotations
+        - /metadata/labels
+      syncPolicy:
+        automated:
+          prune: {{ if ((.Values.autoshift).dryRun) }}false{{ else }}true{{ end }}
+          selfHeal: {{ if ((.Values.autoshift).dryRun) }}false{{ else }}true{{ end }}
+        syncOptions:
+        - RespectIgnoreDifferences=true
+        - CreateNamespace=true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: {{ printf "policies-%s" .Release.Name }}

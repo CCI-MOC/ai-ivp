@@ -35,14 +35,14 @@ We use Ansible Vault to encrypt the temporary password. You will be prompted to 
 The first time you do this:
 
 ```bash
-ansible-vault create vars/secrets.yaml
+ansible-vault create playbooks/vars/secrets.yaml
 ```
 
 Ansible will ask you for a vault password. Set this to something secure and remember it because you will need to use it to run the playbook.
 
 For subsequent users, the vault is already created, so you will use the `edit` subcommand instead of `create`.
 ```bash
-ansible-vault edit vars/secrets.yaml
+ansible-vault edit playbooks/vars/secrets.yaml
 ```
 
 Inside the vault editor that opens, paste:
@@ -55,12 +55,12 @@ If there is a value present, change it to assign a different temporary password 
 
 4. Add Public Keys
  
-Create a file in the admin_public_keys/ directory. The filename must match the requested username. Paste the new user's public key into the file. You can get the requested username and public key from the access request ticket.
+Create a file in the playbooks/admin_public_keys/ directory. The filename must match the requested username. Paste the new user's public key into the file. You can get the requested username and public key from the access request ticket.
 
 ```bash
-mkdir -p admin_public_keys/
+mkdir -p playbooks/admin_public_keys/
 # Example for user 'jsmith'
-vi admin_public_keys/jsmith.pub
+vi playbooks/admin_public_keys/jsmith.pub
 # Paste their public key, save and exit (:wq)
 ```
 
