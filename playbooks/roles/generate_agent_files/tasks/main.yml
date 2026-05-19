@@ -1,0 +1,44 @@
+---
+# tasks file for generate_agent_files
+- name: Create install directory structure
+  ansible.builtin.file:
+    path: "{{ cluster_name }}/machine-configs"
+    state: directory
+    mode: '0755'
+    recurse: true
+
+- name: Create install-config.yaml
+  ansible.builtin.template:
+    dest: "{{ cluster_name }}/install-config.yaml"
+    mode: '0755'
+    src: install-config.j2
+
+- name: Create agent-config.yaml
+  ansible.builtin.template:
+    dest: "{{ cluster_name }}/agent-config.yaml"
+    mode: '0755'
+    src: agent-config.j2
+
+- name: Create 99-master-custom-configs.yaml
+  ansible.builtin.template:
+    dest: "{{ cluster_name }}/machine-configs/99-master-custom-configs.yaml"
+    mode: '0755'
+    src: 99-master-custom-configs.j2
+
+- name: Create 99-worker-custom-configs.yaml
+  ansible.builtin.template:
+    dest: "{{ cluster_name }}/machine-configs/99-worker-custom-configs.yaml"
+    mode: '0755'
+    src: 99-worker-custom-configs.j2
+
+- name: Create manifests from generated files
+  ansible.builtin.command: ./openshift-install-fips agent create cluster-manifests --dir {{ cluster_name }}
+
+- name: Insert TPM configuration into agent-cluster-install.yaml
+  ansible.builtin.blockinfile:
+    path: "{{ cluster_name }}/cluster-manifests/agent-cluster-install.yaml"
+    insertafter: '^\s*spec:\s*$'
+    block: |2
+        diskEncryption:
+          enableOn: all
+          mode: tpmv2
