@@ -1,0 +1,33 @@
+---
+- name: OpenShift Agent-Based Installer Generate ISO
+  hosts: localhost
+  connection: local
+  vars:
+    install_dir: infra
+
+  tasks:
+    - name: Generate the Agent ISO
+      # Use the absolute path or ensure openshift-install is in your $PATH
+      ansible.builtin.command:
+        cmd: "./openshift-install-fips agent create image --dir {{ install_dir }} --log-level debug"
+      register: iso_generation
+      changed_when: true
+
+    - name: Display ISO location
+      ansible.builtin.debug:
+        msg: "ISO generated successfully at: {{ install_dir }}/agent.x86_64.iso"
+
+    - name: Retrieve Kubeadmin credentials
+      ansible.builtin.slurp:
+        src: "{{ install_dir }}/auth/kubeadmin-password"
+      register: kubeadmin_pass_encoded
+
+    - name: Show Kubeadmin Password
+      ansible.builtin.debug:
+        msg: 
+          - "KUBEADMIN PASSWORD - STORE SAFELY"
+          - "-----------------------------------"
+          - "Kubeadmin Password: {{ kubeadmin_pass_encoded['content'] | b64decode }}"
+          - "Kubeconfig Path: {{ playbook_dir }}/{{ install_dir }}/auth/kubeconfig"
+          - "-----------------------------------"
+...

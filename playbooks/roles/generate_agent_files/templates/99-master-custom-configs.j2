@@ -1,0 +1,22 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 99-master-custom-configs
+spec:
+  config:
+    ignition:
+      version: 3.4.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,{{ chrony_key }}
+        overwrite: true
+        mode: 420
+        path: /etc/chrony.conf
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,{{ hosts_custom }}
+        overwrite: true
+        mode: 420
+        path: /etc/hosts

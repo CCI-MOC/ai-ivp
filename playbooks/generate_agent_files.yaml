@@ -1,0 +1,9 @@
+---
+- name: Generate OpenShift Agent Installer Ignition Files
+  hosts: localhost
+  connection: local
+
+  roles:
+    - generate_agent_files
+...
+

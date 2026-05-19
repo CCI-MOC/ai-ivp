@@ -1,0 +1,83 @@
+apiVersion: v1alpha1
+kind: AgentConfig
+metadata:
+  name: {{ cluster_name }}
+rendezvousIP: {{ rendezvous_ip }}
+additionalNTPSources:
+  - {{ ntp }}
+hosts:
+  - hostname: {{ master1_hostname }}
+    role: master
+    interfaces:
+      - name: eno1
+        macAddress: {{ master1_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ master1_ip }}
+                prefix-length: 24
+            dhcp: false
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}1
+            next-hop-interface: eno1
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}
+  - hostname: {{ master2_hostname }}
+    role: master
+    interfaces:
+      - name: eno1
+        macAddress: {{ master2_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ master2_ip }}
+                prefix-length: 24
+            dhcp: false
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}
+            next-hop-interface: eno1
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}
+  - hostname: {{ master3_hostname }}
+    role: master
+    interfaces:
+      - name: eno1
+        macAddress: {{ master3_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ master3_ip }}
+                prefix-length: 24
+            dhcp: false
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}
+            next-hop-interface: eno1
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}
