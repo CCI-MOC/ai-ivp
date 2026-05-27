@@ -1,0 +1,21 @@
+# SOURCE: https://install.portworx.com/26.1?oem=px-csi&operator=true&ce=pure&csi=true&stork=false&kbver=1.34.6&ns=portworx&osft=true&c=px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015&tel=true
+kind: StorageCluster
+apiVersion: core.libopenstorage.org/v1
+metadata:
+  name: px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015
+  namespace: portworx
+  annotations:
+    portworx.io/install-source: "https://install.portworx.com/26.1?oem=px-csi&operator=true&ce=pure&csi=true&stork=false&kbver=1.34.6&ns=portworx&osft=true&c=px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015&tel=true"
+    portworx.io/is-openshift: "true"
+    portworx.io/misc-args: "--oem px-csi"
+spec:
+  image: portworx/px-pure-csi-driver:26.2.0-ea1
+  imagePullPolicy: Always
+  csi:
+    enabled: true
+  monitoring:
+    telemetry:
+      enabled: true
+    prometheus:
+      exportMetrics: true
+  env:

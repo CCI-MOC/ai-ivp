@@ -1,0 +1,10 @@
+{
+  "FlashBlades": [
+    {
+      "MgmtEndPoint": "10.3.11.50",
+      "APIToken": "<API TOKEN KEY",
+      "Realm": "infra-ocp-massopen",
+      "NFSEndPoint": "10.8.0.10"
+    }
+  ]
+}

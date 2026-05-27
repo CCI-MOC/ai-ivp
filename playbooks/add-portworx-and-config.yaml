@@ -1,0 +1,95 @@
+---
+- name: Install Portworx Operator and Configure Resources on OpenShift
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    portworx_namespace: "portworx"
+    portworx_channel: "stable" 
+    portworx_operator_name: "portworx-certified"
+    portworx_catalog_source: "certified-operators"
+    portworx_catalog_namespace: "openshift-marketplace"
+    
+    # Paths to your local files
+    pure_secret_json_path: "./vars/pure.json"
+    storageclass_yaml_path: "./vars/storageclass.yaml"
+    portworx_csi_yaml_path: "./vars/portworx-csi.yaml"
+    vlan_nncp_yaml_path: "./vars/vlan2305nncp.yaml"
+
+  tasks:
+    - name: Ensure the Portworx namespace exists
+      kubernetes.core.k8s:
+        name: "{{ portworx_namespace }}"
+        kind: Namespace
+        state: present
+
+    - name: Create OperatorGroup for Portworx
+      redhat.cop.operator_group:
+        name: "{{ portworx_namespace }}-og"
+        namespace: "{{ portworx_namespace }}"
+        target_namespaces: [] 
+        state: present
+
+    - name: Create Subscription for Portworx Operator
+      redhat.cop.subscription:
+        name: "{{ portworx_operator_name }}"
+        namespace: "{{ portworx_namespace }}"
+        channel: "{{ portworx_channel }}"
+        source: "{{ portworx_catalog_source }}"
+        source_namespace: "{{ portworx_catalog_namespace }}"
+        install_plan_approval: Automatic
+        state: present
+
+    - name: Wait for Portworx Operator to become ready
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        namespace: "{{ portworx_namespace }}"
+        label_selectors:
+          - name = portworx-operator
+      register: operator_deployment
+      until: >
+        operator_deployment.resources | length > 0 and
+        operator_deployment.resources[0].status.readyReplicas is defined and
+        operator_deployment.resources[0].status.readyReplicas == operator_deployment.resources[0].status.replicas
+      retries: 30
+      delay: 10
+
+    # ----------------------------------------------------------------
+    # New Tasks: Applying user-provided configurations
+    # ----------------------------------------------------------------
+
+    - name: Create px-pure-secret from pure.json
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: px-pure-secret
+            namespace: "{{ portworx_namespace }}"
+          type: Opaque
+          stringData:
+            # Looks up and loads the raw contents of your local pure.json file
+            pure.json: "{{ lookup('ansible.builtin.file', pure_secret_json_path) }}"
+
+    - name: Apply NodeNetworkConfigurationPolicy (vlan2305nncp.yaml)
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ vlan_nncp_yaml_path }}"
+
+    - name: Apply Portworx CSI Storage Cluster (portworx-csi.yaml)
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ portworx_csi_yaml_path }}"
+
+    - name: Apply StorageClass definition (storageclass.yaml)
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ storageclass_yaml_path }}"
+        namespace: "{{ portworx_namespace }}"
+
+    - name: Confirm successful deployment
+      ansible.builtin.debug:
+        msg: "Portworx Operator, Secrets, NNCP, CSI, and StorageClasses have been successfully applied."
