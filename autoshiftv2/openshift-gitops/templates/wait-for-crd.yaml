@@ -12,6 +12,8 @@ metadata:
 spec:
   containers:
   - name: crd-check 
+    securityContext:
+      allowPrivilegeEscalation: false
     image: {{ .Values.image }}
     imagePullPolicy: IfNotPresent
     command: ['sh', '-c', 'while [ true ]; do oc get crd argocds.argoproj.io applications.argoproj.io appprojects.argoproj.io; if [ $? -eq 0 ]; then break; fi ; sleep 5s; done']

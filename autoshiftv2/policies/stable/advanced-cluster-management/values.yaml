@@ -12,7 +12,7 @@ acm:
   availabilityConfig: High
   enable_backup: false
   provisioning:
-  # storage_class:
+    storage_class: pure-fb-nfsv4
     database_size: 10Gi
     filesystem_storage_size: 100Gi
     image_storage_size: 50Gi
