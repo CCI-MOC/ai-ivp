@@ -16,6 +16,7 @@
     storageclass_yaml_path: "./vars/storageclass.yaml"
     portworx_csi_yaml_path: "./vars/portworx-csi.yaml"
     vlan_nncp_yaml_path: "./vars/vlan2305nncp.yaml"
+    portworx_admin_network_path: "./vars/portworx-admin-network-policy.yaml"
 
   tasks:
     - name: Ensure the Portworx namespace exists
@@ -78,6 +79,11 @@
       kubernetes.core.k8s:
         state: present
         src: "{{ vlan_nncp_yaml_path }}"
+    
+    - name: Apply AdminNetworkPolicy (portworx-admin-network-policy.yaml)
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ portworx_admin_network_path }}"
 
     - name: Apply Portworx CSI Storage Cluster (portworx-csi.yaml)
       kubernetes.core.k8s:
