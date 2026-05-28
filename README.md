@@ -4,6 +4,23 @@ A validated pattern for deploying a scalable, compliant platform for AI research
 
 Infrastructure as code is included to deploy the pattern in a repeatable fashion.
 
+# Architecture
+
+## Deployment
+
+## Option 1 - HCP
+
+![Logical Deployment Diagram](/diagrams/architecture-diagrams-HCP_Logical_Deployment_Diagram.drawio.png)
+
+## Option 2 - No HCP
+
+![Logical Deployment Diagram](/diagrams/architecture-diagrams-Non-HCP_Logical_Deployment_Diagram.drawio.png)
+
+## Networking
+
+![Logical Network Diagram](/diagrams/architecture-diagrams-HCP_Logical_Network_Diagram.drawio.png)
+
+
 # Installation
 
 ## Bastion Setup
