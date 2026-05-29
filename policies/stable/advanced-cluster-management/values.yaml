@@ -68,8 +68,8 @@ acm:
           cpu: 100m
         limits:
           memory: 512Mi
-  hubClusterSets:
-    hub-minimal:
+# hubClusterSets:
+#   hub-minimal:
 #     labels:
 #       test1: 'test'
 # managedClusterSets:
