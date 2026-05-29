@@ -19,7 +19,7 @@ autoshiftGitBranchTag: main
 # Per-cluster overrides use the autoshift.io/gitops-namespace label
 gitopsNamespace: openshift-gitops
 
-selfManagedHubSet: hub
+selfManagedHubSet: hub-minimal
 
 # Optional: Enable versioned ClusterSet names for gradual rollout
 # When true, appends version/branch to all clusterset names
