@@ -17,7 +17,7 @@
 # See docs/developer-guide.md for more details on label requirements.
 
 # Minimum Hub Cluster Configuration
-hubClusterSets:
+managedClusterSets:
   hub-minimal:
     labels:
       # Required: OpenShift version for image mirroring and compatibility
