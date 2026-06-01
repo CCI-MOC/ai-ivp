@@ -5,6 +5,8 @@ metadata:
   labels:
     operator.libopenstorage.org/managed-by: portworx
   name: pure-fb-nfsv4
+  annotations:
+    storageclass.kubernetes.io/is-default-class: 'true'
 mountOptions:
 - nfsvers=4.1
 - tcp
