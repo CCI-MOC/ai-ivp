@@ -1,0 +1,31 @@
+---
+# vars file for generate_agent_files
+cluster_name: 
+base_domain: 
+ocp_version: 
+work_dir:
+ntp:
+master1_hostname:
+master1_mac: 
+master1_ip :
+master2_hostname: 
+master2_mac: 
+master2_ip : 
+master3_hostname: 
+master3_mac: 
+master3_ip : 
+rendezvous_ip: 
+gateway_ip: 
+dns_ip: 
+disk_path_1:
+disk_path_2:
+cluster_network: 
+machine_network: 
+svc_network: 
+api_ip: 
+ingress_ip: 
+hosts_custom: 
+chrony_key: 
+pull_secret: 
+ssh_key:
+
