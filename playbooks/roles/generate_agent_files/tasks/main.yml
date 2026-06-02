@@ -42,3 +42,33 @@
         diskEncryption:
           enableOn: all
           mode: tpmv2
+
+- name: Create butane configs
+  block:
+    - name: Create install directory for Butane files
+      ansible.builtin.file:
+        path: "{{ cluster_name }}/openshift"
+        state: directory
+        mode: '0755'
+
+    - name: Copy configs to working directory
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "./{{ item }}"
+        mode: 0644
+      loop:
+        - master-storage.bu
+
+    - name: Run Butane to output to install directory
+      ansible.builtin.command: ./butane ./{{ item }}.bu -o {{ cluster_name }}/openshift/99-{{item}}.yaml
+      loop:
+        - master-storage
+
+  always:
+    - name: Clean up local butane files
+      ansible.builtin.file:
+        path: "./{{ item }}"
+        state: absent
+      loop:
+        - master-storage.bu
+      
