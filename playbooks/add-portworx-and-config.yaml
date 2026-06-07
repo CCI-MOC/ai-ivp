@@ -53,20 +53,22 @@
             source: "{{ portworx_catalog_source }}"
             sourceNamespace: "{{ portworx_catalog_namespace }}"
 
-    - name: Wait for Portworx Operator to become ready
+    - name: Wait for Portworx Operator CSV to become ready
       kubernetes.core.k8s_info:
-        api_version: apps/v1
-        kind: Deployment
+        api_version: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
         namespace: "{{ portworx_namespace }}"
-        label_selectors:
-          - name = portworx-operator
-      register: operator_deployment
+      register: csv_list
       until: >
-        operator_deployment.resources | length > 0 and
-        operator_deployment.resources[0].status.readyReplicas is defined and
-        operator_deployment.resources[0].status.readyReplicas == operator_deployment.resources[0].status.replicas
+        csv_list.resources | 
+        selectattr('metadata.name', 'match', '^portworx-operator\.v.*') | 
+        selectattr('status.phase', 'defined') | 
+        selectattr('status.phase', 'equalto', 'Succeeded') | 
+        selectattr('status.reason', 'defined') | 
+        selectattr('status.reason', 'equalto', 'InstallSucceeded') | 
+        list | length > 0
       retries: 30
-      delay: 10
+      delay: 15
 
     # ----------------------------------------------------------------
     # New Tasks: Applying user-provided configurations
