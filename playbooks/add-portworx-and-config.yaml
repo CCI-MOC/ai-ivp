@@ -26,21 +26,32 @@
         state: present
 
     - name: Create OperatorGroup for Portworx
-      redhat.cop.operator_group:
-        name: "{{ portworx_namespace }}-og"
-        namespace: "{{ portworx_namespace }}"
-        target_namespaces: [] 
+      kubernetes.core.k8s:
         state: present
+        definition:
+          apiVersion: operators.coreos.com/v1
+          kind: OperatorGroup
+          metadata:
+            name: "{{ portworx_namespace }}-og"
+            namespace: "{{ portworx_namespace }}"
+          spec:
+            targetNamespaces: []
 
     - name: Create Subscription for Portworx Operator
-      redhat.cop.subscription:
-        name: "{{ portworx_operator_name }}"
-        namespace: "{{ portworx_namespace }}"
-        channel: "{{ portworx_channel }}"
-        source: "{{ portworx_catalog_source }}"
-        source_namespace: "{{ portworx_catalog_namespace }}"
-        install_plan_approval: Automatic
+      kubernetes.core.k8s:
         state: present
+        definition:
+          apiVersion: operators.coreos.com/v1alpha1
+          kind: Subscription
+          metadata:
+            name: "{{ portworx_operator_name }}"
+            namespace: "{{ portworx_namespace }}"
+          spec:
+            channel: "{{ portworx_channel }}"
+            installPlanApproval: Automatic
+            name: "{{ portworx_operator_name }}"
+            source: "{{ portworx_catalog_source }}"
+            sourceNamespace: "{{ portworx_catalog_namespace }}"
 
     - name: Wait for Portworx Operator to become ready
       kubernetes.core.k8s_info:
