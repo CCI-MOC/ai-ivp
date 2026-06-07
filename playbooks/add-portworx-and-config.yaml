@@ -85,8 +85,8 @@
             namespace: "{{ portworx_namespace }}"
           type: Opaque
           stringData:
-            # Looks up and loads the raw contents of your local pure.json file
-            pure.json: "{{ lookup('ansible.builtin.file', pure_secret_json_path) }}"
+            # The '| string' filter ensures the contents are passed as a raw text block
+            pure.json: "{{ lookup('ansible.builtin.file', pure_secret_json_path) | string }}"
 
     - name: Apply NodeNetworkConfigurationPolicy (vlan2305nncp.yaml)
       kubernetes.core.k8s:
