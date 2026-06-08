@@ -16,12 +16,6 @@ This option uses OpenShift Hosted Control Planes.
 
 ![Logical Deployment Diagram](/diagrams/architecture-diagrams-HCP_Logical_Deployment_Diagram.drawio.png)
 
-## Option 2 - No HCP
-
-This option does not use Hosted Control Planes. Each cluster is deployed to separate physical hardware with its own control plane.
-
-![Logical Deployment Diagram](/diagrams/architecture-diagrams-Non-HCP_Logical_Deployment_Diagram.drawio.png)
-
 ## Networking
 
 This network digram shows how clusters and users connect.
