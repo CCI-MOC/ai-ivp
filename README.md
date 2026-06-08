@@ -8,11 +8,7 @@ Infrastructure as code is included to deploy the pattern in a repeatable fashion
 
 ## Deployment
 
-These diagrams show the components of the system and how they are deployed. Active architectural discussions are considering two options.
-
-## Option 1 - HCP
-
-This option uses OpenShift Hosted Control Planes.
+This deployment diagram shows the components of the system and how they are deployed.
 
 ![Logical Deployment Diagram](/diagrams/architecture-diagrams-HCP_Logical_Deployment_Diagram.drawio.png)
 
