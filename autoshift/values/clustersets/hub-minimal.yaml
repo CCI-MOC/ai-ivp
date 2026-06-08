@@ -48,7 +48,7 @@ hubClusterSets:
       quay-subscription-name: quay-operator
       quay-channel:  stable-3.17
       quay-source: redhat-operators
-      quay-source-amespace: openshift-marketplace
+      quay-source-namespace: openshift-marketplace
 
       ### Keycloak
       keycloak: 'true'
@@ -56,3 +56,16 @@ hubClusterSets:
       keycloak-channel: stable
       keycloak-source: redhat-operators
       keycloak-source-namespace: openshift-marketplace
+
+      ### Openshift Compliance Operator
+      compliance: 'true'
+      compliance-subscription-name: compliance-operator
+      compliance-channel: stable
+      compliance-source: redhat-operators
+      compliance-source-namespace: openshift-marketplace
+
+
+
+
+
+
