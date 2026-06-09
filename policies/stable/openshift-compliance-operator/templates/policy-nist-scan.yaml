@@ -4,7 +4,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
-  name: policy-stig-scan
+  name: policy-nist-scan
   namespace: {{ .Values.policy_namespace }}
   annotations:
     policy.open-cluster-management.io/standards: NIST SP 800-53
@@ -50,7 +50,7 @@ spec:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: compliance-stig-scan
+          name: compliance-nist-scan
         spec:
           remediationAction: enforce
           severity: high
@@ -93,23 +93,20 @@ spec:
                   kind: Role
                   name: compliance-operator-agg-patch-role
 
-            - complianceType: musthave # this template creates ScanSettingBinding:stig
+            - complianceType: musthave # this template creates ScanSettingBinding:nist
               objectDefinition:
                 apiVersion: compliance.openshift.io/v1alpha1
                 kind: ScanSettingBinding
                 metadata:
-                  name: stig
+                  name: nist
                   namespace: {{ .Values.compliance.namespace }}
                 profiles:
                   - apiGroup: compliance.openshift.io/v1alpha1
                     kind: Profile
-                    name: ocp4-stig
+                    name: ocp4-high
                   - apiGroup: compliance.openshift.io/v1alpha1
                     kind: Profile
-                    name: ocp4-stig-node
-                  - apiGroup: compliance.openshift.io/v1alpha1
-                    kind: Profile
-                    name: rhcos4-stig
+                    name: ocp4-high-node
                 settingsRef:
                   apiGroup: compliance.openshift.io/v1alpha1
                   kind: ScanSetting
@@ -119,7 +116,7 @@ spec:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
         metadata:
-          name: compliance-suite-stig-test
+          name: compliance-suite-nist-test
         spec:
           remediationAction: inform
           severity: high
@@ -132,7 +129,7 @@ spec:
                 apiVersion: compliance.openshift.io/v1alpha1
                 kind: ComplianceSuite
                 metadata:
-                  name: stig
+                  name: nist
                   namespace: {{ .Values.compliance.namespace }}
                 status:
                   phase: DONE
@@ -140,7 +137,7 @@ spec:
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
 metadata:
-  name: placement-policy-stig-scan
+  name: placement-policy-nist-scan
   namespace: {{ .Values.policy_namespace }}
 spec:
   clusterSets:
@@ -167,13 +164,13 @@ spec:
 apiVersion: policy.open-cluster-management.io/v1
 kind: PlacementBinding
 metadata:
-  name: placement-policy-stig-scan
+  name: placement-policy-nist-scan
   namespace: {{ .Values.policy_namespace }}
 placementRef:
-  name: placement-policy-stig-scan
+  name: placement-policy-nist-scan
   apiGroup: cluster.open-cluster-management.io
   kind: Placement
 subjects:
-  - name: policy-stig-scan
+  - name: policy-nist-scan
     apiGroup: policy.open-cluster-management.io
     kind: Policy
