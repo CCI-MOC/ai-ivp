@@ -9,7 +9,10 @@ if [ -z "${STORAGE_CLASS_NAME}" ]; then
   exit 1
 fi
 
-echo "=== Creating PVC ==="
+echo "=== Deleting old PVC if it exists ==="
+oc delete pvc fio-test-pvc --ignore-not-found --grace-period=0 --force || true
+
+echo "=== Creating fresh PVC ==="
 oc create -f - <<EOF
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -25,9 +28,9 @@ spec:
 EOF
 
 # =============================================
-# Official Red Hat etcd-perf Test
+# Official etcd-perf Test (Red Hat recommended)
 # =============================================
-echo "=== Running Official etcd-perf Test (Red Hat recommended) ==="
+echo "=== Running Official etcd-perf Test ==="
 oc run etcd-perf-test \
   --image=quay.io/cloud-bulldozer/etcd-perf:latest \
   --restart=Never \
@@ -36,8 +39,6 @@ oc run etcd-perf-test \
     "containers": [{
       "name": "etcd-perf",
       "image": "quay.io/cloud-bulldozer/etcd-perf:latest",
-      "command": ["/bin/sh", "-c"],
-      "args": ["mkdir -p /var/lib/etcd && echo \"=== Running official etcd-perf test ===\" && /usr/bin/run.sh"],
       "securityContext": {
         "runAsUser": 0,
         "runAsNonRoot": false
@@ -59,11 +60,13 @@ oc run etcd-perf-test \
   }
 }'
 
-echo "=== Waiting for official test to complete (up to 15 minutes) ==="
-oc wait --for=condition=PodScheduled pod/etcd-perf-test --timeout=120s || true
+echo "=== Following logs live (Ctrl+C stops watching, test continues) ==="
+oc logs -f etcd-perf-test || true
+
+echo "=== Waiting for test to finish (max 15 minutes) ==="
 oc wait --for=jsonpath='{.status.phase}'=Succeeded pod/etcd-perf-test --timeout=900s || true
 
-echo "=== Official etcd-perf Results ==="
+echo "=== Final Test Results ==="
 oc logs etcd-perf-test
 
 echo "=== Cleanup ==="
