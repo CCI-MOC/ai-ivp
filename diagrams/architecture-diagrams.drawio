@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2026-06-11T22:47:38.305Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="S6E-nH1LStcr_29Q0b34" scale="1" border="0" version="24.4.6" type="device" pages="3">
+<mxfile host="Electron" modified="2026-06-11T22:50:34.870Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="c-CJXwdT4t0mT9Bgi_lh" scale="1" border="0" version="24.4.6" type="device" pages="4">
   <diagram name="HCP_Logical_Deployment_Diagram" id="Z3SrGU5thELAxrZcLja-">
     <mxGraphModel dx="468" dy="273" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="750" pageHeight="550" math="0" shadow="0">
       <root>
@@ -523,7 +523,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="N74tEyCLepzUS3Kk9fgt" name="vlans">
+  <diagram id="N74tEyCLepzUS3Kk9fgt" name="VLANs_Option1">
     <mxGraphModel dx="1218" dy="823" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="750" pageHeight="550" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -659,6 +659,123 @@
         </mxCell>
         <mxCell id="oXKFyI1MxvGWj9UEGf56-58" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Dev&lt;/b&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&amp;nbsp;Cluster&lt;br&gt;&lt;/b&gt;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;Sandbox for workload clusters.&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F0FF;verticalAlign=top;" parent="1" vertex="1">
           <mxGeometry x="330" y="840" width="210" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="VLANS_Option2" id="j2hM4ziSEQsks5_DUnV-">
+    <mxGraphModel dx="1218" dy="823" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="750" pageHeight="550" math="0" shadow="0">
+      <root>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-0" />
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-1" parent="xGtocosZ5_xjlCoBVCXt-0" />
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-2" value="&lt;b&gt;Infra VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Control plane and shared services traffic" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="570" y="360" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-3" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;Pure Storage&lt;/b&gt;&lt;br&gt;&lt;br&gt;Stores AI workload data&lt;br&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F0FF;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="970" y="600" width="163.26" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-5" target="xGtocosZ5_xjlCoBVCXt-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-5" value="&lt;b&gt;Storage VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Storage traffic" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="766.74" y="360" width="160" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-8" target="xGtocosZ5_xjlCoBVCXt-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-8" target="xGtocosZ5_xjlCoBVCXt-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="460" y="340" />
+              <mxPoint x="834" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-8" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;Infra Cluster&lt;br&gt;&lt;/b&gt;&lt;br&gt;Hosts control planes and shared services for Staging/Production&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F0FF;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="330" y="360" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-10" target="xGtocosZ5_xjlCoBVCXt-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-10" value="&lt;b&gt;Staging&lt;/b&gt;&lt;b&gt;&amp;nbsp;VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Traffic to and between nodes &amp;amp; Pods." style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="570" y="480" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-15" target="xGtocosZ5_xjlCoBVCXt-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-15" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Staging&lt;/b&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&amp;nbsp;Cluster&lt;br&gt;&lt;/b&gt;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;Used to validate cluster level changes before Production&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F0FF;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="330" y="480" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-17" target="xGtocosZ5_xjlCoBVCXt-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="640" />
+              <mxPoint x="750" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-17" value="&lt;b&gt;Production&lt;/b&gt;&lt;b&gt;&amp;nbsp;VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Traffic to and between nodes &amp;amp; Pods." style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="570" y="600" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" target="xGtocosZ5_xjlCoBVCXt-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="926.7399999999998" y="640" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-22" target="xGtocosZ5_xjlCoBVCXt-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wYUkBmmAKPPMEuT7NQ1l-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-22" target="xGtocosZ5_xjlCoBVCXt-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="435" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-22" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Production&lt;/b&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&amp;nbsp;Cluster&lt;br&gt;&lt;/b&gt;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;Production workloads&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F0FF;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="330" y="600" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-23" value="&lt;b&gt;Dev-Infra&lt;/b&gt;&lt;b&gt;&amp;nbsp;VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Control plane and shared services traffic" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="570" y="720" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-28" target="xGtocosZ5_xjlCoBVCXt-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wYUkBmmAKPPMEuT7NQ1l-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-28" target="xGtocosZ5_xjlCoBVCXt-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="435" y="700" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-28" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Dev-Infra&lt;/b&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&amp;nbsp;Cluster&lt;br&gt;&lt;/b&gt;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;Sandbox for control planes and services. Used by Dev cluster.&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F0FF;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="330" y="720" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-30" target="xGtocosZ5_xjlCoBVCXt-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-30" value="&lt;b&gt;Dev&lt;/b&gt;&lt;b&gt;&amp;nbsp;VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Traffic to and between nodes &amp;amp; Pods." style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="570" y="840" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-35" target="xGtocosZ5_xjlCoBVCXt-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wYUkBmmAKPPMEuT7NQ1l-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-35" target="xGtocosZ5_xjlCoBVCXt-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="435" y="820" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xGtocosZ5_xjlCoBVCXt-35" value="&lt;b style=&quot;font-size: 14px;&quot;&gt;Dev&lt;/b&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&amp;nbsp;Cluster&lt;br&gt;&lt;/b&gt;&lt;br&gt;&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;Sandbox for workload clusters.&lt;/span&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E0F0FF;verticalAlign=top;" vertex="1" parent="xGtocosZ5_xjlCoBVCXt-1">
+          <mxGeometry x="330" y="840" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="wYUkBmmAKPPMEuT7NQ1l-0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.014;entryY=0.179;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="xGtocosZ5_xjlCoBVCXt-1" source="xGtocosZ5_xjlCoBVCXt-15" target="xGtocosZ5_xjlCoBVCXt-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="435" y="460" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

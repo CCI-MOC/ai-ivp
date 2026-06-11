@@ -14,6 +14,8 @@ This deployment diagram shows the components of the system and how they are depl
 
 ## Networking
 
+**DRAFT IN PROGRESS.** There is an open RFC for the high level networking design - [RFC 06 - High Level Network Architecture for OpenShift](https://docs.google.com/document/d/1pW9P7jLs6QAOVVLIys5vmcHClthTqWzNSlI5lXA1Ca8/edit?usp=sharing)
+
 ### Overview
 The networking architecture for this OpenShift 4.21 + ACM 2.16 Hosted Control Planes (HCP) deployment uses VLAN-based segmentation on bare-metal infrastructure. The design provides strong isolation, performance for AI workloads, and supports HIPAA compliance requirements through logical and physical separation of traffic.
 
@@ -45,7 +47,7 @@ Current hardware has 2×10 GbE NICs per node. New hardware will have multiple 10
 
 ##### Initial Design (2×10 GbE NICs)
 
-![Initial VLAN Design ](/diagrams/architecture-diagrams-vlans.drawio.png)
+![Initial VLAN Design ](/diagrams/architecture-diagrams-VLANs_Option1.drawio.png)
 
 Each node will have two NICs:
 
