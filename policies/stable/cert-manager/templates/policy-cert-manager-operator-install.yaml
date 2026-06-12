@@ -133,6 +133,26 @@ spec:
                 spec:
                   defaultCertificate:
                     name: {{ .Values.certManager.certificate.secretName }}
+            # Item 4: Adding Github as the IDP
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: config.openshift.io/v1
+                kind: OAuth
+                metadata:
+                  name: cluster
+                spec:
+                  identityProviders:
+                    - name: github
+                      mappingMethod: claim
+                      type: GitHub
+                      github:
+                        clientID: {{ .Values.certManager.github-OAuth.clientID }}
+                        clientSecret:
+                          name: {{ .Values.certManager.github-OAuth.client-secret }}
+                        teams:
+                          {{- range .Values.certManager.github-OAuth.teams }}
+                          - {{ . }} # <-- Loops through array from values.yaml
+                          {{- end }}
 ---         
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
