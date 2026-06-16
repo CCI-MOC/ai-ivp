@@ -21,9 +21,9 @@ This OpenShift resource contains basic definitions for configuring the autoshift
 
  These directories contain the configurations for each operator AutoShift is installing.
 
- -*Chart.yaml* - Helm chart for installation, no modification necessary
- -*values.yaml* - Values files for associated templates
- -*templates/* - This directory contains any templates for ACM policies as well as operator specific resources that will be deployed with the operator.
+ - *Chart.yaml* - Helm chart for installation, no modification necessary
+ - *values.yaml* - Values files for associated templates
+ - *templates/* - This directory contains any templates for ACM policies as well as operator specific resources that will be deployed with the operator.
 
  The following environment specific changes have been made to these subdirectories:
 
