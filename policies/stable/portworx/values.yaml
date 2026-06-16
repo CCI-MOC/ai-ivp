@@ -3,14 +3,14 @@
 # Declare variables to be passed into your templates.
 policy_namespace: open-cluster-policies
 portworx:
-  name: portworx
+  name: portworx-certified
   namespace: portworx
   channel: stable
-  source: redhat-operators
+  source: certified-operators
   sourceNamespace: openshift-marketplace
   operatorGroupName: portworx-operator-group
-  # targetNamespaces: # Optional: specify target namespaces for namespace-scoped operators
-  #   - portworx
+  targetNamespaces: # Optional: specify target namespaces for namespace-scoped operators
+     - portworx
   
 # hubClusterSets:
 #   hub:
