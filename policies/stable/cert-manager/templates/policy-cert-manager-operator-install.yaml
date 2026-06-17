@@ -68,7 +68,92 @@ spec:
           upgradeApproval: Automatic
           versions:
             - '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/cert-manager-version" | default "" {{ "hub}}" }}'
----
+    # =========================================================================
+    # Cert-Manager CRDs & Resources
+    # =========================================================================
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: cert-manager-custom-resources
+        spec:
+          remediationAction: enforce
+          severity: medium
+          evaluationInterval:
+            compliant: {{ ((($.Values.autoshift).evaluationInterval).compliant) | default "10m" }}
+            noncompliant: {{ ((($.Values.autoshift).evaluationInterval).noncompliant) | default "30s" }}
+          object-templates:
+            # Item 1: The ClusterIssuer
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: cert-manager.io/v1
+                kind: ClusterIssuer
+                metadata:
+                  name: {{ .Values.certManager.issuer.name }}
+                spec:
+                  acme:
+                    email: {{ .Values.certManager.issuer.email }}
+                    server: https://acme-v02.api.letsencrypt.org/directory
+                    privateKeySecretRef:
+                      name: letsencrypt-route53-private-key
+                    solvers:
+                    - dns01:
+                        route53:
+                          region: us-east-1      
+                          accessKeyID: {{ .Values.certManager.issuer.accessKeyID }}
+                          secretAccessKeySecretRef:
+                            name: {{ .Values.certManager.issuer.secretAccessKeySecretRef.name }}
+                            key: {{ .Values.certManager.issuer.secretAccessKeySecretRef.key }}               
+            # Item 2: The Certificate
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: cert-manager.io/v1
+                kind: Certificate
+                metadata:
+                  name: open-shift-wildcard-cert
+                  namespace: openshift-ingress
+                spec:
+                  secretName: {{ .Values.certManager.certificate.secretName }}
+                  issuerRef:
+                    name: {{ .Values.certManager.issuer.name }}
+                    kind: ClusterIssuer
+                  commonName: "{{ .Values.certManager.certificate.commonName }}"
+                  dnsNames:
+                    {{- range .Values.certManager.certificate.dnsNames }}
+                    - "{{ . }}" # <-- Loops through array from values.yaml
+                    {{- end }}
+            # Item 3: Updating the default IngressContoller
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: operator.openshift.io/v1
+                kind: IngressController
+                metadata:
+                  name: default
+                  namespace: openshift-ingress-operator
+                spec:
+                  defaultCertificate:
+                    name: {{ .Values.certManager.certificate.secretName }}
+            # Item 4: Adding Github as the IDP
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: config.openshift.io/v1
+                kind: OAuth
+                metadata:
+                  name: cluster
+                spec:
+                  identityProviders:
+                    - name: github
+                      mappingMethod: claim
+                      type: GitHub
+                      github:
+                        clientID: {{ .Values.certManager.githubOAuth.clientID }}
+                        clientSecret:
+                          name: {{ .Values.certManager.githubOAuth.clientSecret }}
+                        teams:
+                          {{- range .Values.certManager.githubOAuth.teams }}
+                          - {{ . }} # <-- Loops through array from values.yaml
+                          {{- end }}
+---         
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
 metadata:

@@ -7,6 +7,17 @@ nmstate:
     source: redhat-operators
     sourceNamespace: openshift-marketplace
 
+config:
+  networking:
+    interfaces:
+      storage-vlan:
+        type: vlan
+        name: eno1.2305
+        id: 2305
+        base: eno1
+        ipv4: dhcp
+        
+
 # ==============================================================================
 # AutoShift NMState Configuration Reference
 # ==============================================================================

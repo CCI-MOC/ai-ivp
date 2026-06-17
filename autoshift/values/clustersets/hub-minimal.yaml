@@ -72,6 +72,20 @@ hubClusterSets:
       local-storage-source-namespace: openshift-marketplace
       local-storage-channel: stable
 
+      ### Cert Manager
+      cert-manager: 'true'
+      cert-manager-subscription-name: openshift-cert-manager-operator
+      cert-manager-channel: stable-v1
+      cert-manager-source: redhat-operators
+      cert-manager-source-namespace: openshift-marketplace
+
+      ### NMState
+      nmstate: 'true'
+      nmstate-channel: stable
+      nmstate-subscription-name: kubernetes-nmstate-operator
+      nmstate-source: redhat-operators
+      nmstate-source-namespace: openshift-marketplace
+
 
 
 

@@ -11,7 +11,25 @@ certManager:
   operatorGroupName: cert-manager-operator-group
   # targetNamespaces: # Optional: specify target namespaces for namespace-scoped operators
   #   - cert-manager-operator
-  
+  issuer:
+    name: letsencrypt-route53-infra
+    email: devops-team@example.com
+    accessKeyID: AKIAYLUGMT7YKZRT4APO
+    secretAccessKeySecretRef:
+      name: aws-route53-credentials
+      key: secret-access-key
+    
+  certificate:
+    secretName: open-shift-wildcard-cert-tls
+    commonName: "*.apps.infra.ocp.massopen.cloud"
+    dnsNames:
+      - "*.apps.infra.ocp.massopen.cloud"
+  githubOAuth:
+    clientID: Ov23livwF4cStPZ9AjXD
+    clientSecret: github-client-secret
+    teams:
+      - CCI-MOC/ai-ivp         
+
 # hubClusterSets:
 #   hub:
 #     labels:
