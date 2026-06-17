@@ -1,0 +1,215 @@
+{{- $policyName := "policy-portworx-operator-install" }}
+{{- $placementName := "placement-policy-portworx-operator-install" }}
+
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: {{ $policyName }}
+  namespace: {{ .Values.policy_namespace }}
+  annotations:
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+spec:
+{{ if (($.Values.autoshift).dryRun) }}
+  remediationAction: inform
+{{ end }}
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: portworx-operator-ns
+        spec:
+          remediationAction: enforce
+          severity: high
+          evaluationInterval:
+            compliant: {{ ((($.Values.autoshift).evaluationInterval).compliant) | default "10m" }}
+            noncompliant: {{ ((($.Values.autoshift).evaluationInterval).noncompliant) | default "30s" }}
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: {{ .Values.portworx.namespace }}
+                  labels:
+                    openshift.io/cluster-monitoring: "true"
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1beta1
+        kind: OperatorPolicy
+        metadata:
+          name: install-operator-portworx
+        spec:
+          remediationAction: enforce
+          severity: high
+          complianceType: musthave
+          operatorGroup:
+            # if operator group exists in namespace use that, otherwise use namespace name as default
+            name: '{{ "{{" }} with (lookup "operators.coreos.com/v1" "OperatorGroup" "{{ .Values.portworx.namespace }}" "").items {{ "}}" }}{{ "{{" }} (index . 0).metadata.name {{ "}}" }}{{ "{{" }} else {{ "}}" }}{{ .Values.portworx.namespace }}{{ "{{" }} end {{ "}}" }}'
+            namespace: {{ .Values.portworx.namespace }}
+            {{- if .Values.portworx.targetNamespaces }}
+            targetNamespaces:
+              {{- range .Values.portworx.targetNamespaces }}
+              - {{ . }}
+              {{- end }}
+            {{- end }}
+          subscription:
+            name: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-subscription-name" | default "{{ .Values.portworx.name }}" {{ "hub}}" }}'
+            namespace: {{ .Values.portworx.namespace }}
+            # Source: base from label or helm default; if disconnected-mirror is true, appends -<suffix>
+            source: '{{ "{{hub" }} $base := (index .ManagedClusterLabels "autoshift.io/portworx-source" | default "{{ .Values.portworx.source }}") {{ "hub}}" }}{{ "{{hub" }} ternary (printf "%s-%s" $base (index .ManagedClusterLabels "autoshift.io/mirror-catalog-suffix" | default "mirror")) $base (eq (index .ManagedClusterLabels "autoshift.io/disconnected-mirror" | default "false") "true") {{ "hub}}" }}'
+            sourceNamespace: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-source-namespace" | default "{{ .Values.portworx.sourceNamespace }}" {{ "hub}}" }}'
+            channel: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-channel" | default "{{ .Values.portworx.channel }}" {{ "hub}}" }}'
+            startingCSV: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-version" | default "" {{ "hub}}" }}'
+          # Upgrade approval for subscription will be set based on if version is set not this flag
+          # If version is set install plan is set to manual and only the version specified will be installed
+          upgradeApproval: Automatic
+          versions:
+            - '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-version" | default "" {{ "hub}}" }}'
+    # =========================================================================
+    # Cert-Manager CRDs & Resources  (Must Create the pure.json secret before running this)
+    # =========================================================================
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: portworx-custom-resources
+        spec:
+          remediationAction: enforce
+          severity: medium
+          evaluationInterval:
+            compliant: {{ ((($.Values.autoshift).evaluationInterval).compliant) | default "10m" }}
+            noncompliant: {{ ((($.Values.autoshift).evaluationInterval).noncompliant) | default "30s" }}
+          object-templates:
+            # Item 1: The StorageClass
+            - complianceType: musthave
+              objectDefinition:
+                allowVolumeExpansion: true
+                apiVersion: storage.k8s.io/v1
+                kind: StorageClass
+                metadata:
+                  labels:
+                    operator.libopenstorage.org/managed-by: portworx
+                  name: pure-fb-nfsv4
+                  annotations:
+                    storageclass.kubernetes.io/is-default-class: 'true'
+                mountOptions:
+                - nfsvers=4.1
+                - tcp
+                parameters:
+                  backend: pure_file
+                  pure_nfs_policy: 'infra-policy'
+                  pure_nfs_server: "infra-server"
+                  pure_nfs_export_rules_client: "10.8.0.0/24"
+                provisioner: pxd.portworx.com
+                reclaimPolicy: Delete
+                volumeBindingMode: Immediate           
+            # Item 2: The NodeNetworkConfigurationPolicy
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: nmstate.io/v1
+                kind: NodeNetworkConfigurationPolicy
+                metadata:
+                  name: eno1-vlan-2305
+                spec:
+                  desiredState:
+                    interfaces:
+                      - name: eno1.2305
+                        type: vlan
+                        state: up
+                        vlan:
+                          base-iface: eno1
+                          id: 2305
+                        ipv4:
+                          enabled: true
+                          dhcp: true
+                          auto-gateway: false
+                          auto-routes: false
+            # Item 3: Updating StorageCluster
+            - complianceType: musthave
+              objectDefinition:
+                # SOURCE: https://install.portworx.com/26.1?oem=px-csi&operator=true&ce=pure&csi=true&stork=false&kbver=1.34.6&ns=portworx&osft=true&c=px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015&tel=true
+                kind: StorageCluster
+                apiVersion: core.libopenstorage.org/v1
+                metadata:
+                  name: px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015
+                  namespace: portworx
+                  annotations:
+                    portworx.io/install-source: "https://install.portworx.com/26.1?oem=px-csi&operator=true&ce=pure&csi=true&stork=false&kbver=1.34.6&ns=portworx&osft=true&c=px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015&tel=true"
+                    portworx.io/is-openshift: "true"
+                    portworx.io/misc-args: "--oem px-csi"
+                spec:
+                  image: portworx/px-pure-csi-driver:26.2.0-ea1
+                  imagePullPolicy: Always
+                  csi:
+                    enabled: true
+                  monitoring:
+                    telemetry:
+                      enabled: true
+                    prometheus:
+                      exportMetrics: true
+                  env:
+            # Item 4: The AdminNetworkPolicy
+            - complianceType: musthave
+              objectDefinition:
+               apiVersion: policy.networking.k8s.io/v1alpha1
+               kind: AdminNetworkPolicy
+               metadata:
+                 name: deny-pure-storage-api
+               spec:
+                 priority: 10
+                 subject:
+                   namespaces:
+                     matchExpressions:
+                       - key: kubernetes.io/metadata.name
+                         operator: NotIn
+                         values: [portworx]
+                   egress:
+                   - name: deny-pure-api
+                     action: Deny
+                     to:
+                       - networks:
+                           - "10.3.11.50/32"
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: {{ $placementName }}
+  namespace: {{ .Values.policy_namespace }}
+spec:
+  clusterSets:
+  {{- range $clusterSet, $value := $.Values.hubClusterSets }}
+    - {{ $clusterSet }}
+  {{- end }}
+  {{- range $clusterSet, $value := $.Values.managedClusterSets }}
+    - {{ $clusterSet }}
+  {{- end }}
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - key: 'autoshift.io/portworx'
+              operator: In
+              values:
+              - 'true'
+  tolerations:
+    - key: cluster.open-cluster-management.io/unreachable
+      operator: Exists
+    - key: cluster.open-cluster-management.io/unavailable
+      operator: Exists
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: {{ $placementName }}
+  namespace: {{ .Values.policy_namespace }}
+placementRef:
+  name: {{ $placementName }}
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+subjects:
+  - name: {{ $policyName }}
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy
