@@ -56,7 +56,7 @@ hubClusterSets:
       portworx-channel: stable
       portworx-source: certified-operators
       portworx-source-namespace: openshift-marketplace
-      portworx-version: portworx-certified.v26.2.1
+      portworx-version: portworx-operator.v26.2.1
 
       ### Keycloak
       keycloak: 'true'
