@@ -63,6 +63,7 @@ spec:
             sourceNamespace: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-source-namespace" | default "{{ .Values.portworx.sourceNamespace }}" {{ "hub}}" }}'
             channel: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-channel" | default "{{ .Values.portworx.channel }}" {{ "hub}}" }}'
             startingCSV: '{{ "{{hub" }} index .ManagedClusterLabels "autoshift.io/portworx-version" | default "" {{ "hub}}" }}'
+            installPlanApproval: Automatic
           # Upgrade approval for subscription will be set based on if version is set not this flag
           # If version is set install plan is set to manual and only the version specified will be installed
           upgradeApproval: Automatic
