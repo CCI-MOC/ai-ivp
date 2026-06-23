@@ -45,11 +45,6 @@ To execute this playbook, optionally defining cluster_name as an extra variable 
 ansible-playbook create_agent_iso.yaml -e "cluster_name=NAME"
 ```
 
-License
--------
-
-BSD
-
 Author Information
 ------------------
 
