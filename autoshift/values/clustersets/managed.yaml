@@ -17,29 +17,29 @@ managedClusterSets:
       # OpenShift version for cluster deployment and image mirroring
       openshift-version: '4.20.12'
       ### tempo
-      tempo: 'true'
+      tempo: 'false'
       tempo-subscription-name: tempo-product
       tempo-channel: stable
       tempo-source: redhat-operators
       tempo-source-namespace: openshift-marketplace
       # tempo-version: 'tempo-operator.v0.19.0-1'
       ### kiali
-      kiali: 'true'
+      kiali: 'false'
       kiali-subscription-name: kiali-ossm
       kiali-channel: stable
       kiali-source: redhat-operators
       kiali-source-namespace: openshift-marketplace
       kiali-version: 'kiali-operator.v2.17.2'
       ### servicemesh3
-      servicemesh3operator: 'true'
+      servicemesh3operator: 'false'
       servicemesh3operator-subscription-name: servicemeshoperator3
       servicemesh3operator-channel: stable
       servicemesh3operator-source: redhat-operators
       servicemesh3operator-source-namespace: openshift-marketplace
       servicemesh3operator-version: 'servicemeshoperator3.v3.3.1'
-      servicemesh3-ambient: 'true'
+      servicemesh3-ambient: 'false'
       ### Master Node Kubelet Configuration
-      master-nodes: 'true'
+      master-nodes: 'false'
       master-max-pods: '250'
       master-system-reserved-memory: '3Gi'
       master-system-reserved-cpu: '500m'
@@ -75,7 +75,7 @@ managedClusterSets:
       local-storage-source: redhat-operators
       local-storage-source-namespace: openshift-marketplace
       ### OpenShift Data Foundation
-      odf: 'true'
+      odf: 'false'
       odf-subscription-name: odf-operator
       # odf-version: 'odf-operator.v4.18.11-rhodf'
       odf-multi-cloud-gateway: standalone
@@ -92,13 +92,13 @@ managedClusterSets:
       odf-source-namespace: openshift-marketplace
       # odf-default-storageclass: gp3-csi
       ### Advanced Cluster Security
-      acs: 'true'
+      acs: 'false'
       acs-subscription-name: rhacs-operator
       # acs-version: 'rhacs-operator.v4.6.1'
       acs-channel: stable
       acs-source: redhat-operators
       acs-source-namespace: openshift-marketplace
-      acs-monitoring: 'true'
+      acs-monitoring: 'false'
       # acs-vm-scanning: 'true'
       # acs-admission-control: 'true'
       # acs-network-policies: Enabled
@@ -133,11 +133,11 @@ managedClusterSets:
       quay-source: '' # redhat-operators
       quay-source-namespace: '' # openshift-marketplace
       ### Developer OpenShift Gitops
-      gitops-dev: 'true'
+      gitops-dev: 'false'
       gitops-dev-team-test: 'hub' #hub or standalone
       # gitops-dev-team-{INSERT_TEAM_NAME}
       ### Loki
-      loki: 'true'
+      loki: 'false'
       loki-subscription-name: loki-operator
       # loki-version: 'loki-operator.v6.3.0'
       loki-channel: stable-6.5
@@ -147,24 +147,24 @@ managedClusterSets:
       loki-storageclass: gp3-csi
       loki-lokistack-name: logging-lokistack
       ### OpenShift Logging
-      logging: 'true'
+      logging: 'false'
       logging-subscription-name: cluster-logging
       # logging-version: 'cluster-logging.v6.3.0'
       logging-channel: stable-6.5
       logging-source: redhat-operators
       logging-source-namespace: openshift-marketplace
       ### Cluster Observability Operator
-      coo: 'true'
+      coo: 'false'
       coo-subscription-name: cluster-observability-operator
       # coo-version: 'cluster-observability-operator.v0.4.0'
       coo-channel: stable
       coo-source: redhat-operators
       coo-source-namespace: openshift-marketplace
       ### User Workload Monitoring
-      uwm: 'true'
+      uwm: 'false'
       ### Compliance Operator Stig Apply
-      compliance: 'true'
-      compliance-auto-remediate: 'true'
+      compliance: 'false'
+      compliance-auto-remediate: 'false'
       compliance-subscription-name: compliance-operator
       compliance-source: redhat-operators
       compliance-source-namespace: openshift-marketplace
@@ -176,14 +176,14 @@ managedClusterSets:
       # Example: redhat-operators + -mirror = redhat-operators-mirror
       mirror-catalog-suffix: 'mirror'
       ### node-maintenance
-      node-maintenance: 'true'
+      node-maintenance: 'false'
       node-maintenance-subscription-name: node-maintenance-operator
       node-maintenance-channel: stable
       node-maintenance-source: redhat-operators
       node-maintenance-source-namespace: openshift-marketplace
       node-maintenance-version: 'node-maintenance-operator.v5.5.0'
       ### external-secrets-operator
-      external-secrets-operator: 'true'
+      external-secrets-operator: 'false'
       external-secrets-operator-subscription-name: openshift-external-secrets-operator
       external-secrets-operator-channel: stable-v1
       external-secrets-operator-source: redhat-operators
