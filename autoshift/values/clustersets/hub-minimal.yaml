@@ -94,6 +94,14 @@ hubClusterSets:
       nmstate-source: redhat-operators
       nmstate-source-namespace: openshift-marketplace
 
+      ### OpenShift Logging
+      logging: 'true'
+      logging-subscription-name: cluster-logging
+      logging-version: 'cluster-logging.v6.3.0'
+      logging-channel: stable-6.5
+      logging-source: redhat-operators
+      logging-source-namespace: openshift-marketplace
+    
 
 
 
