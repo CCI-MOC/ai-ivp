@@ -102,6 +102,7 @@ spec:
                   backend: pure_file
                   pure_nfs_policy: 'infra-policy'
                   pure_nfs_server: "infra-server"
+                  pure_nfs_export_rules_access: "no-squash"
                   pure_nfs_export_rules_client: "10.8.0.0/24"
                 provisioner: pxd.portworx.com
                 reclaimPolicy: Delete
