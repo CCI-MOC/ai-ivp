@@ -1,0 +1,23 @@
+---
+# vars file for generate_agent_files
+cluster_name: "ocp-prod"
+base_domain: "example.com"
+ocp_version: "4.21"
+work_dir: "/ocp_agent_install"
+pull_secret: # Paste your full pull secret string here
+ssh_key: #ssh pub key for core user in RHCOS
+master1_hostname:
+master1_mac:
+master1_ip :
+master2_hostname:
+master2_mac:
+master2_ip :
+master3_hostname:
+master3_mac:
+master3_ip :
+rendezvous_ip:
+gateway_ip:
+dns_ip:
+cluster_network: #0.0.0.0/0
+machine_network: #0.0.0.0/0
+svc_network: #0.0.0.0/0
