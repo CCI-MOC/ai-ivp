@@ -34,16 +34,17 @@ spec:
                     name: localvolumeset
                     namespace: openshift-local-storage
                   spec:
-                    deviceInclusionSpec:
-                      deviceTypes:
-                        - disk
                     nodeSelector:
                       nodeSelectorTerms:
-                        - matchExpressions:
-                            - key: cluster.ocs.openshift.io/openshift-storage
-                              operator: Exists
+                      - matchExpressions:
+                        - key: cluster.ocs.openshift.io/openshift-storage
+                          operator: Exists
                     storageClassName: local-storageclass
-                    volumeMode: Block
+                    volumeMode: Filesystem
+                    fsType: xfs
+                    deviceInclusionSpec:
+                      deviceTypes:
+                      - disk
           pruneObjectBehavior: None
           remediationAction: enforce
           severity: high
