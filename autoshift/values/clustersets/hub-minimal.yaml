@@ -101,8 +101,27 @@ hubClusterSets:
       logging-channel: stable-6.5
       logging-source: redhat-operators
       logging-source-namespace: openshift-marketplace
-    
 
+      ### OpenShift Data Foundation
+      odf: 'true'
+      odf-channel: stable-4.21
+      odf-multi-cloud-gateway: standalone
+      odf-version: 'odf-operator.v4.21.8-rhodf'
+      odf-source: redhat-operators
+      odf-source-namespace: openshift-marketplace
+      odf-subscription-name: odf-operator
+      
+      ### Loki
+      loki: 'true'
+      loki-channel: stable-6.5
+      loki-lokistack-name: logging-lokistack
+      loki-size: 1x.extra-small
+      loki-source: redhat-operators
+      loki-source-namespace: openshift-marketplace
+      loki-subscription-name: loki-operator
+      loki-version: 'loki-operator.v6.5.1'
+      loki-storageclass: pure-fb-nfsv4
+      
 
 
 
