@@ -55,7 +55,6 @@ spec:
                     cephRBDMirror: {}
                     cephToolbox: {}
                     cephDashboard: {}
-                    cephConfig: {}
                   mirroring: {}
                   multiCloudGateway:
                     reconcileStrategy: standalone
