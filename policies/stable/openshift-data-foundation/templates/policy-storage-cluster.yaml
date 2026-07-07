@@ -144,7 +144,6 @@ spec:
                       daemonCount: 1
                     cephToolbox: {}
                     cephDashboard: {}
-                    cephConfig: {}
                   arbiter: {}
                   multiCloudGateway:
                     reconcileStrategy: manage
