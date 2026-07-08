@@ -121,7 +121,14 @@ hubClusterSets:
       loki-subscription-name: loki-operator
       loki-version: 'loki-operator.v6.5.1'
       loki-storageclass: pure-fb-nfsv4
-      
+
+      ### Cluster Observability Operator
+      coo: 'true'
+      coo-subscription-name: cluster-observability-operator
+      coo-version: 'cluster-observability-operator.v1.5.1'
+      coo-channel: stable
+      coo-source: redhat-operators
+      coo-source-namespace: openshift-marketplace
 
 
 
