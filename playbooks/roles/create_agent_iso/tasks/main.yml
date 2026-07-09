@@ -32,7 +32,7 @@
     src: 99-worker-custom-configs.j2
 
 - name: Create manifests from generated files
-  ansible.builtin.command: ./openshift-install-fips agent create cluster-manifests --dir {{ cluster_name }}
+  ansible.builtin.command: openshift-install-fips agent create cluster-manifests --dir {{ cluster_name }}
 
 - name: Insert TPM configuration into agent-cluster-install.yaml
   ansible.builtin.blockinfile:
@@ -52,25 +52,26 @@
 - name: Generate the Agent ISO
   # Use the absolute path or ensure openshift-install is in your $PATH
   ansible.builtin.command:
-    cmd: "openshift-install-fips agent create image --dir {{ install_dir }} --log-level debug"
+    cmd: "openshift-install-fips agent create image --dir {{ cluster_name }} --log-level debug"
   register: iso_generation
   changed_when: true
 
 - name: Display ISO location
   ansible.builtin.debug:
-    msg: "ISO generated successfully at: {{ install_dir }}/agent.x86_64.iso"
+    msg: "ISO generated successfully at: {{ cluster_name }}/agent.x86_64.iso"
 
 - name: Retrieve Kubeadmin credentials
   ansible.builtin.slurp:
-    src: "{{ install_dir }}/auth/kubeadmin-password"
+    src: "{{ cluster_name }}/auth/kubeadmin-password"
   register: kubeadmin_pass_encoded
-
+  
 - name: Show Kubeadmin Password
   ansible.builtin.debug:
-    msg: 
+    msg:
       - "KUBEADMIN PASSWORD - STORE SAFELY"
       - "-----------------------------------"
       - "Kubeadmin Password: {{ kubeadmin_pass_encoded['content'] | b64decode }}"
-      - "Kubeconfig Path: {{ playbook_dir }}/{{ install_dir }}/auth/kubeconfig"
+      - "Kubeconfig Path: {{ playbook_dir }}/{{ cluster_name }}/auth/kubeconfig"
       - "-----------------------------------"
 ...
+  
