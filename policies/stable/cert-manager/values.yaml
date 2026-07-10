@@ -13,7 +13,7 @@ certManager:
   #   - cert-manager-operator
   issuer:
     #name: letsencrypt-route53-infra
-    email: devops-team@example.com
+    email: naved001@bu.edu
     secretAccessKeySecretRef:
       name: aws-route53-credentials
       key: secret-access-key
