@@ -122,7 +122,7 @@ spec:
                   # commonName: "{{ .Values.certManager.certificate.commonName }}"
                   commonName: '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "commonName" {{ "}}" }}"'
                   dnsNames:
-                    '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "dnsNames" {{ "}}" }}"'
+                    - '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "dnsNames" {{ "}}" }}"'
             # Item 3: Updating the default IngressContoller
             - complianceType: musthave
               objectDefinition:
@@ -152,7 +152,7 @@ spec:
                         clientSecret:
                           name: {{ .Values.certManager.githubOAuth.clientSecret }}
                         teams:
-                          '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-teams" {{ "}}" }}'  
+                          - '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-teams" {{ "}}" }}'  
 ---         
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
