@@ -3,9 +3,10 @@
 Backgournd: This will give you some background information on what the Agent-Iso is and how it works
 https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 
-1. Make sure you can Login to bastion ( 10.11.0.30 ) using idrac 10.6.1.152. This is so you have access to a GUI and browser 
+1. Make sure you can Login to bastion ( 10.11.0.30 ) using idrac 10.6.1.152. This is so you have access to a GUI and browser. Also make sure to 
 
 2. PREP
+- Make sure butane and openshift-install-fips are in the /usr/local/bin directory for the whole server to user.
 - Create a custom-hosts.txt. (See https://access.redhat.com/support/cases/#/case/04442017 for more information).
   The custom-hosts.txt follows the following format in Plaintext
   ```
@@ -47,12 +48,13 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
   ```
 4. ISO GENERATION
 
-- Playbooks and role and everything are located on the 10.11.0.20 bastion under /home/dgroh
-- If you need to change a template or variable, the role is in roles/generate_agent_files
-- Update the main.yaml under /home/dgroh/roles/generate_agent_files/vars to customize the agent-iso towards your cluster. 
-- To create the ISO run ansible-playbook create_agent_iso.yaml 
-- If you need more granular control over the creation of the ISO (ie: support tells you to make a specific file or something) you can run generate_agent_files first to create the directory structure and the basic files, then run (from the home directory) ./openshift-install-fips agent create cluster-manifests --dir infra to generate the specific manifests, you can then add or modify a file if you need, then run ./openshift-install-fips agent create image --dir infra --log-level debug to generate the ISO manually.
-- The ISO is present at infra/agent.x86_64.iso and the kubesecret is present in infra/auth
+- Checkout out the https://github.com/CCI-MOC/ai-ivp/ project. 
+- Update the main.yaml under <home_dir>/ai-ivp/playbooks/vars to customize the agent-iso towards your cluster. 
+- To create the ISO run 
+  ```
+  ansible-playbook create_agent_iso.yaml -e "cluster_name=<cluser_name>"
+  ```
+- The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 
 4. PUSH ISO TO NEW BASTION
 
@@ -65,8 +67,28 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 5. ATTACH ISO TO SERVERS AND REBOOT
 
 - Log into the new bastion's IDRAC at 10.6.1.52 and open Virtual Console
-- Log into RHEL and then open the IDRAC web console for the three servers at 10.6.1.175,185,195
+- Log into RHEL and then open the IDRAC web console for the three servers at 
+  ```
+  Infra
+  10.6.1.175,185,195
+  Staging
+  10.6.1.176,186,196
+  ```
 - Open their web consoles an click virtual media
 - DO NOT CLOSE THE BROWSER AT ANY POINT AFTER ATTACHING THE VIRTUAL MEDIA
 - Attach the ISO to the servers and reboot them
-- Once the install has sufficiently progressed you can ssh into them using the id_rsa_ocp key found in dgroh/.ssh on the old bastion using core@ip
+- Press F11 and change the boot order to Virtual Media
+- From the staging directory that holds the recently created agent_iso you can follow the install by running
+  ```
+  openshift-install agent wait-for bootstrap-complete --dir <installation_directory>
+  ```
+  This command will block and wait until the initial control plane is up and the temporary bootstrap process has pivoted to the permanent control plane nodes. It is safe to run this immediately after booting your nodes.
+  ```
+  openshift-install agent wait-for install-complete --dir <installation_directory>
+  ```
+  Once the bootstrap is complete, run this command. It will wait until all cluster operators are available, the worker nodes have joined, and the cluster is fully operational.
+
+- For troubleshooting once the install has sufficiently progressed you can ssh into them using the id_rsa_ocp key found in dgroh/.ssh on the old bastion using core@ip, ie  
+  ```
+  ssh -i /root/ssh/id_rsa_ocp core@10.13.0.22
+  ```
