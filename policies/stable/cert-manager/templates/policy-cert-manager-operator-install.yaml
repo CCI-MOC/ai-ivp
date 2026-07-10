@@ -89,7 +89,8 @@ spec:
                 apiVersion: cert-manager.io/v1
                 kind: ClusterIssuer
                 metadata:
-                  name: {{ .Values.certManager.issuer.name }}
+                  #name: {{ .Values.certManager.issuer.name }}
+                  name: {{ fromSecret "cert-manager" "aws-route53-credentials" "issuer-name" }}
                 spec:
                   acme:
                     email: {{ .Values.certManager.issuer.email }}
@@ -100,7 +101,8 @@ spec:
                     - dns01:
                         route53:
                           region: us-east-1      
-                          accessKeyID: {{ .Values.certManager.issuer.accessKeyID }}
+                          #accessKeyID: {{ .Values.certManager.issuer.accessKeyID }}
+                          accessKeyID: {{ fromSecret "cert-manager" "aws-route53-credentials" "accessKeyID" }}
                           secretAccessKeySecretRef:
                             name: {{ .Values.certManager.issuer.secretAccessKeySecretRef.name }}
                             key: {{ .Values.certManager.issuer.secretAccessKeySecretRef.key }}               
@@ -117,11 +119,10 @@ spec:
                   issuerRef:
                     name: {{ .Values.certManager.issuer.name }}
                     kind: ClusterIssuer
-                  commonName: "{{ .Values.certManager.certificate.commonName }}"
+                  # commonName: "{{ .Values.certManager.certificate.commonName }}"
+                  commonName: "{{ fromSecret "cert-manager" "aws-route53-credentials" "commonName" }}"
                   dnsNames:
-                    {{- range .Values.certManager.certificate.dnsNames }}
-                    - "{{ . }}" # <-- Loops through array from values.yaml
-                    {{- end }}
+                    "{{ fromSecret "cert-manager" "aws-route53-credentials" "dnsNames" }}"
             # Item 3: Updating the default IngressContoller
             - complianceType: musthave
               objectDefinition:
@@ -146,13 +147,12 @@ spec:
                       mappingMethod: claim
                       type: GitHub
                       github:
-                        clientID: {{ .Values.certManager.githubOAuth.clientID }}
+                        # clientID: {{ .Values.certManager.githubOAuth.clientID }}
+                        clientID: {{ fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-clientID" }}
                         clientSecret:
                           name: {{ .Values.certManager.githubOAuth.clientSecret }}
                         teams:
-                          {{- range .Values.certManager.githubOAuth.teams }}
-                          - {{ . }} # <-- Loops through array from values.yaml
-                          {{- end }}
+                          {{ fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-teams" }}  
 ---         
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
