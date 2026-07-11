@@ -12,7 +12,7 @@ certManager:
   # targetNamespaces: # Optional: specify target namespaces for namespace-scoped operators
   #   - cert-manager-operator
   issuer:
-    #name: letsencrypt-route53-infra
+    name: letsencrypt-route53
     email: naved001@bu.edu
     secretAccessKeySecretRef:
       name: aws-route53-credentials
