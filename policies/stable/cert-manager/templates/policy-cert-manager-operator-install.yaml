@@ -101,7 +101,7 @@ spec:
                         route53:
                           region: us-east-1      
                           #accessKeyID: {{ .Values.certManager.issuer.accessKeyID }}
-                          accessKeyID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "accessKeyID" {{ "}}" }}'
+                          accessKeyID: '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "accessKeyID" {{ "}}" }}"'
                           secretAccessKeySecretRef:
                             name: {{ .Values.certManager.issuer.secretAccessKeySecretRef.name }}
                             key: {{ .Values.certManager.issuer.secretAccessKeySecretRef.key }}               
@@ -147,7 +147,7 @@ spec:
                       type: GitHub
                       github:
                         # clientID: {{ .Values.certManager.githubOAuth.clientID }}
-                        clientID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-clientID" {{ "}}" }}'
+                        clientID: '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-clientID" {{ "}}" }}"'
                         clientSecret:
                           name: {{ .Values.certManager.githubOAuth.clientSecret }}
                         teams:
