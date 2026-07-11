@@ -89,7 +89,7 @@ spec:
                 apiVersion: cert-manager.io/v1
                 kind: ClusterIssuer
                 metadata:
-                  name: {{ .Values.certManager.issuer.name }}
+                  name: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "issuer-name" | base64dec {{ "}}" }}'
                 spec:
                   acme:
                     email: {{ .Values.certManager.issuer.email }}
@@ -101,7 +101,7 @@ spec:
                         route53:
                           region: us-east-1      
                           #accessKeyID: {{ .Values.certManager.issuer.accessKeyID }}
-                          accessKeyID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "accessKeyID" {{ "}}" }}'
+                          accessKeyID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "accessKeyID" | base64dec {{ "}}" }}'
                           secretAccessKeySecretRef:
                             name: {{ .Values.certManager.issuer.secretAccessKeySecretRef.name }}
                             key: {{ .Values.certManager.issuer.secretAccessKeySecretRef.key }}               
@@ -119,9 +119,9 @@ spec:
                     name: {{ .Values.certManager.issuer.name }}
                     kind: ClusterIssuer
                   # commonName: "{{ .Values.certManager.certificate.commonName }}"
-                  commonName: '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "commonName" {{ "}}" }}"'
+                  commonName: '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "commonName" | base64dec {{ "}}" }}"'
                   dnsNames:
-                    - '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "dnsNames" {{ "}}" }}"'
+                    - '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "dnsNames" | base64dec {{ "}}" }}"'
             # Item 3: Updating the default IngressContoller
             - complianceType: musthave
               objectDefinition:
@@ -147,11 +147,11 @@ spec:
                       type: GitHub
                       github:
                         # clientID: {{ .Values.certManager.githubOAuth.clientID }}
-                        clientID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-clientID" {{ "}}" }}'
+                        clientID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-clientID" | base64dec {{ "}}" }}'
                         clientSecret:
                           name: {{ .Values.certManager.githubOAuth.clientSecret }}
                         teams:
-                          - '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-teams" {{ "}}" }}'  
+                          - '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-teams" | base64dec {{ "}}" }}'  
 ---         
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
