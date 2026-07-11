@@ -89,8 +89,7 @@ spec:
                 apiVersion: cert-manager.io/v1
                 kind: ClusterIssuer
                 metadata:
-                  #name: {{ .Values.certManager.issuer.name }}
-                  name: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "issuer-name" {{ "}}" }}'
+                  name: {{ .Values.certManager.issuer.name }}
                 spec:
                   acme:
                     email: {{ .Values.certManager.issuer.email }}
