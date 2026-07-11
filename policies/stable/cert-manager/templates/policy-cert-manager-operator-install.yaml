@@ -116,7 +116,7 @@ spec:
                 spec:
                   secretName: {{ .Values.certManager.certificate.secretName }}
                   issuerRef:
-                    name: {{ .Values.certManager.issuer.name }}
+                    name: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "issuer-name" | base64dec {{ "}}" }}'
                     kind: ClusterIssuer
                   # commonName: "{{ .Values.certManager.certificate.commonName }}"
                   commonName: '"{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "commonName" | base64dec {{ "}}" }}"'
