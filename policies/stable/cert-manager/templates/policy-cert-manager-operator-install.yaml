@@ -147,11 +147,11 @@ spec:
                       type: GitHub
                       github:
                         # clientID: {{ .Values.certManager.githubOAuth.clientID }}
-                        clientID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-clientID" | base64dec {{ "}}" }}'
+                        clientID: '{{ "{{" }} fromSecret "openshift-config" "github-client-secret" "clientID" | base64dec {{ "}}" }}'
                         clientSecret:
                           name: {{ .Values.certManager.githubOAuth.clientSecret }}
                         teams:
-                          - '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "githubOAuth-teams" | base64dec {{ "}}" }}'  
+                          - '{{ "{{" }} fromSecret "openshift-config" "github-client-secret" "teams" | base64dec {{ "}}" }}'  
 ---         
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
