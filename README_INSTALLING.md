@@ -1,12 +1,15 @@
 # Instructions to install an "Infra" cluster
 
-Backgournd: This will give you some background information on what the Agent-Iso is and how it works
+## Background
+* See this link for background information on what the Agent-Iso is and how it works
 https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
+
+## Instructions
 
 1. Make sure you can Login to bastion ( 10.11.0.30 ) using idrac 10.6.1.152. This is so you have access to a GUI and browser. Also make sure to 
 
 2. PREP
-- Make sure butane and openshift-install-fips are in the /usr/local/bin directory for the whole server to user.
+- Make sure butane and openshift-install-fips are in the /usr/local/bin directory.
 - Create a custom-hosts.txt. (See https://access.redhat.com/support/cases/#/case/04442017 for more information).
   The custom-hosts.txt follows the following format in Plaintext
   ```
@@ -134,7 +137,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 6. Post-Openshift Install Setup
 
 
-- Before a cluster can be handle by Autoshift a few steps to be be taken. 
+- These steps must be performed after the OpenShift cluster install is complete, before Autoshift can be installed.
   1. Pre-configure the required secrets. 
      Since there is not a Secrets Mananger the following secrets will be needed to be created manually:
 	 - Create the namespace "cert-mananger" and "portworx"
