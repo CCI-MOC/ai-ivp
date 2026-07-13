@@ -142,7 +142,7 @@ spec:
                     portworx.io/is-openshift: "true"
                     portworx.io/misc-args: "--oem px-csi"
                 spec:
-                  image: portworx/px-pure-csi-driver:26.2.0-ea1
+                  image: portworx/px-pure-csi-driver:26.2.0
                   imagePullPolicy: Always
                   csi:
                     enabled: true

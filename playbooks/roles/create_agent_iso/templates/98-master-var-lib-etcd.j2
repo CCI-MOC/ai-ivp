@@ -1,0 +1,45 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 98-master-var-lib-etcd
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    systemd:
+      units:
+        - name: format-etcd.service
+          enabled: true
+          contents: |
+            [Unit]
+            Description=Dynamically format unique etcd disk based on hostname
+            Before=var-lib-etcd.mount local-fs.target
+            DefaultDependencies=no
+            ConditionPathExists=!/dev/disk/by-partlabel/etcd
+
+            [Service]
+            Type=oneshot
+            ExecStart=/bin/bash -c 'HOST=$(hostname); if [[ "$HOST" == *"u33-3b"* ]] || [[ "$HOST" == *"u35-3b"* ]]; then TARGET="/dev/sdc"; elif [[ "$HOST" == *"u37-3b"* ]]; then TARGET="/dev/sdb"; else exit 0; fi; sgdisk -Z $TARGET && sgdisk -n 1:0:0 -c 1:etcd $TARGET && partprobe $TARGET && udevadm settle && mkfs.xfs -f /dev/disk/by-partlabel/etcd'
+
+            [Install]
+            WantedBy=local-fs.target
+
+        - name: var-lib-etcd.mount
+          enabled: true
+          contents: |
+            [Unit]
+            Description=Mount separate disk to /var/lib/etcd
+            Before=local-fs.target
+            After=format-etcd.service
+            Requires=format-etcd.service
+
+            [Mount]
+            What=/dev/disk/by-partlabel/etcd
+            Where=/var/lib/etcd
+            Type=xfs
+            Options=defaults
+
+            [Install]
+            WantedBy=local-fs.target

@@ -8,6 +8,8 @@ additionalNTPSources:
 hosts:
   - hostname: {{ master1_hostname }}
     role: master
+	rootDeviceHints:
+      deviceName: {{ master1_install_drive }}
     interfaces:
       - name: eno1
         macAddress: {{ master1_mac }}
@@ -33,6 +35,8 @@ hosts:
             - {{ dns_ip }}
   - hostname: {{ master2_hostname }}
     role: master
+	rootDeviceHints:
+      deviceName: {{ master2_install_drive }}
     interfaces:
       - name: eno1
         macAddress: {{ master2_mac }}
@@ -58,6 +62,8 @@ hosts:
             - {{ dns_ip }}
   - hostname: {{ master3_hostname }}
     role: master
+	rootDeviceHints:
+      deviceName: {{ master3_install_drive }}
     interfaces:
       - name: eno1
         macAddress: {{ master3_mac }}
