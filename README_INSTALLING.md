@@ -257,8 +257,9 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
                     prometheus:
                       exportMetrics: true
 				  env:
-		```
-	  Since we have already setup our pure.json all we have to do is now watch the events to monitor the the Portworx installation. 
+	   ```
+	   
+	  Since we have already setup our pure.json all we have to do now is watch the events to monitor the the Portworx installation. 
     - After the portworx is done installing we need to create our new storage class that used portworx. 
       From the OpenShift Console go to
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
