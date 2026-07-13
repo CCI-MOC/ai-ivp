@@ -6,7 +6,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 
 ## Instructions
 
-1. Make sure you can Login to bastion ( 10.11.0.30 ) using idrac 10.6.1.152. This is so you have access to a GUI and browser. Also make sure to 
+1. Make sure you can Login to bastion ( 10.11.0.30 ) using idrac 10.6.1.152. This is so you have access to a GUI and browser. Also make sure you have the ability to scp beteen .20 and .30
 
 2. PREP
 - Make sure butane and openshift-install-fips are in the /usr/local/bin directory.
@@ -100,7 +100,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 4. PUSH ISO TO NEW BASTION
 
 - The new bastion is at 10.11.0.30, ssh 10.11.0.30 -l root, you may need to contact Naved to get access
-- You can scp the file over from the old bastion, I've been using scp -i ssh/id_rsa dgroh@10.11.0.20:/home/dgroh/ingra/agent.x86_64.iso
+- You can scp the file over from the old bastion, I've been using scp -i ssh/id_rsa dbrletic@10.11.0.20:/home/dbrletic/agent.x86_64.iso
 - You'll need to create a user identity on the new bastion, an ssh key on the bastion, and add that key to your authorized_keys file in
 - You might also need to copy the iso to your home folder on the old bastion and modify the scp command to pull from that
 - Once the iso is on the new bastion, copy it to your home directory to simplify the next step
@@ -319,7 +319,10 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 	```
 	The location of all our clusterset files is located here: https://github.com/CCI-MOC/ai-ivp/tree/feature/staging-standalone/autoshift/values/clustersets
 	PLEASE NOTE: We are currently using hub-minimal.yaml. For autoshift this file is referenced as hub (line 21 in hub-minimal.yaml)
-	After Autoshift is installed apply the clusterset file (in our case hub-minimal) to the localcluster
+	After Autoshift is installed apply the clusterset file (in our case hub-minimal) to the localcluster.
 	```
 	oc label managedcluster local-cluster cluster.open-cluster-management.io/clusterset=hub --overwrite
 	```
+	Once this is applied AutoShift will now be managing the cluster. To check the status of the cluster you can log into ArgoCD. 
+	The Route for ArgoCD can be found under Network -> Routes in the openshift-gitops namespace. 
+	To find the admin password for ArgoCD go to Workload -> Secrets and check in the infra-gitops-cluster secret in the openshift-gitops namespace. 
