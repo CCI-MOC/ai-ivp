@@ -325,5 +325,6 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 	oc label managedcluster local-cluster cluster.open-cluster-management.io/clusterset=hub --overwrite
 	```
 	Once this is applied AutoShift will now be managing the cluster. To check the status of the cluster you can log into ArgoCD. 
-	The Route for ArgoCD can be found under Network -> Routes in the openshift-gitops namespace. 
+	
+	- The Route for ArgoCD can be found under Network -> Routes in the openshift-gitops namespace. 
 	To find the admin password for ArgoCD go to Workload -> Secrets and check in the infra-gitops-cluster secret in the openshift-gitops namespace. 
