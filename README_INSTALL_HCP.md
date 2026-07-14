@@ -262,7 +262,7 @@ https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/
 		oc apply -f 3-metallb-pool.yaml --kubeconfig kubeconfig.yaml
 		```
 	4. 	Create a Custom Load Balancer
-		Because we are running an HCP cluster, there is a "dictator" operator sitting up on your ACM Hub cluster that constantly monitors the configuration of your bare-metal cluster. When we patched the ingresscontroller to use a LoadBalancer, the Hub operator saw the change, realized it didn't match its master blueprint, and instantly reverted the change (which is why the AGE of your internal service reset to 2 minutes ago).
+		Because we are running an HCP cluster, there is a "dictator" operator sitting up on your ACM Hub cluster that constantly monitors the configuration of your bare-metal cluster. If we patch  the ingresscontroller to use a LoadBalancer, the Hub operator saw the change, realized it didn't match its master blueprint, and instantly reverted the change.
 		To outsmart the HCP operator, we are going to stop fighting it. We will let it keep its default ingress configuration, and instead, we will manually create our own independent LoadBalancer service.
 		Because we create it manually, the Hub operator will ignore it, but MetalLB will see it, attach the 10.13.0.25(the staging example) IP, and route the traffic perfectly into the OpenShift router pods.
 		
