@@ -36,6 +36,9 @@ hubClusterSets:
       gitops-source-namespace: openshift-marketplace
       # gitops-namespace: 'openshift-gitops'  # Override ArgoCD namespace per-cluster
 
+      ### RHOAI GitOps (cluster-scoped for RHOAI operator installs)
+      gitops-dev-team-rhoai-cluster-scoped: 'true'
+
       ### Advanced Cluster Management (AUTOMATIC)
       # ACM is automatically installed on all hub clustersets by policy
       acm-subscription-name: advanced-cluster-management
