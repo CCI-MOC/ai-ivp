@@ -26,7 +26,7 @@ https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/
    - Go to Infrastructure -> Host Inventory 
    - Click on the Host Inventory you created
    - Click on the Host tab
-   - On the upper right click on the Add Host button. There will be mutiple options but the simplest is "With Discovery ISO". Select "Minimal image file", download, and boot to that image using iDRAC
+   - On the upper right click on the Add Host button. There will be mutiple options but the simplest is "With Discovery ISO". Select "Minimal image file", download, and boot to that image using iDRAC for each node you want to add to the cluser. 
      Once iDRAC is setup to use SSL 1.3 you can use the "Add host using Baseboard Management Controller (BMC)" to directly connect to the iDRAC and add the host. 
 	 Once a host is ready it will show up under the Host Inventory File
     
