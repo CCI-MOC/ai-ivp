@@ -22,9 +22,6 @@ pullSecret: '{{ pull_secret | tojson }}'
 sshKey: '{{ ssh_key }}'
 platform:
   baremetal:
-    diskEncryption:
-      enableOn: all
-      mode: tpmv2
     apiVIPs:
       - {{ api_ip }}
     ingressVIPs:
