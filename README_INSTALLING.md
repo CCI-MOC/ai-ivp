@@ -57,7 +57,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 4. ISO GENERATION
 
 - Checkout out the https://github.com/CCI-MOC/ai-ivp/ project. 
-- Update the main.yaml under <home_dir>/ai-ivp/playbooks/vars to customize the agent-iso towards your cluster. 
+- Update the main.yaml under <home_dir>/ai-ivp/playbooks/roles/create_agent_iso/vars to customize the agent-iso towards your cluster. 
   This is a sample main.yaml that was used for Staging
   ```
 	cluster_name: staging
