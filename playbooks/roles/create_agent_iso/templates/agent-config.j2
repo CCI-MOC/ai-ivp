@@ -8,7 +8,7 @@ additionalNTPSources:
 hosts:
   - hostname: {{ master1_hostname }}
     role: master
-	rootDeviceHints:
+    rootDeviceHints:
       deviceName: {{ master1_install_drive }}
     interfaces:
       - name: eno1
@@ -35,7 +35,7 @@ hosts:
             - {{ dns_ip }}
   - hostname: {{ master2_hostname }}
     role: master
-	rootDeviceHints:
+    rootDeviceHints:
       deviceName: {{ master2_install_drive }}
     interfaces:
       - name: eno1
@@ -62,7 +62,7 @@ hosts:
             - {{ dns_ip }}
   - hostname: {{ master3_hostname }}
     role: master
-	rootDeviceHints:
+    rootDeviceHints:
       deviceName: {{ master3_install_drive }}
     interfaces:
       - name: eno1

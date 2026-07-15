@@ -57,7 +57,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 4. ISO GENERATION
 
 - Checkout out the https://github.com/CCI-MOC/ai-ivp/ project. 
-- Update the main.yaml under <home_dir>/ai-ivp/playbooks/vars to customize the agent-iso towards your cluster. 
+- Update the main.yaml under <home_dir>/ai-ivp/playbooks/roles/create_agent_iso/vars to customize the agent-iso towards your cluster. 
   This is a sample main.yaml that was used for Staging
   ```
 	cluster_name: staging
@@ -136,7 +136,12 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 
 6. Post-Openshift Install Setup
 
-
+- Adding Users
+  After someone logs in their username will be automatically created. It will be the same as their github username and its possible to run the following command before they log in . Give each username the correct role for access, ie for Cluster-Admin run
+  ```
+  oc adm policy add-cluster-role-to-user cluster-admin <your-github-username>
+  ```
+  
 - These steps must be performed after the OpenShift cluster install is complete, before Autoshift can be installed.
   1. Pre-configure the required secrets. 
      Since there is not a Secrets Mananger the following secrets will be needed to be created manually:
