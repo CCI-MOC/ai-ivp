@@ -120,31 +120,68 @@ In the above example, to switch from the staging to infra environment, you would
 
 5. Log into the desktop gui of the GUI bastion
 
-- Log into the .30 bastion's IDRAC at 10.6.1.52.
-- In the IDRAC interface, go to Server (left navigation menu) -> Launch (right side, under Virtual Console Preview).
+- Log into the .30 bastion's iDRAC at 10.6.1.52.
+- In the iDRAC interface, go to Server (left navigation menu) -> Launch (right side, under Virtual Console Preview).
 - The virtual console window may prompt you to allow pop-ups. Approve, close the window, and try again.
 - You may see a screen that says "No Signal". If so, use the Refresh button at the top of the pop-up window.
 - You will see a login screen for a RHELdesktop. Log using your .30 user password (set when your ran `passwd` on .30).
 
-5.1.  ATTACH ISO TO SERVERS AND REBOOT
+5.1.  Connect to the iDRAC web console for the new OpenShift nodes
 
 Run these instructions using the gui desktop of the .30 bastion.
 
+Open the iDRAC web console for each server you will install OpenShift on.
+
 - Open Chrome (click the red fedora icon to the top left of the desktop and type 'Chrome', then select the option.
 - WARNING: Do *NOT* use Firefox. It will complain about TLS related issues with no easy way to accept the risk and continue.
-- In Chrome, use tabs to open the IDRAC web console for each server you will install OpenShift on.
+- In Chrome, use tabs to open the iDRAC web console for each server you will install OpenShift on. Just enter the IP address into the browser bar.
+- When it complains about TLS, go to Advanced -> Accept.
+- Enter your iDRAC username and password. The person who installed the servers for you may have helped you set this up. For a prototype environment it may be the default iDRAC username password, which are root/calvin.
 
-These are:
+The IPs for the existing iDRACs are:
   ```
-  Infra
-  10.6.1.175, .185, .195
-  Staging
-  10.6.1.176, .186, .196
+  Infra:
+  10.6.1.175
+  10.6.1.185
+  10.6.1.195
+
+  Staging:
+  10.6.1.176
+  10.6.1.186
+  10.6.1.196
   ```
-- Open their web consoles an click virtual media
-- DO NOT CLOSE THE BROWSER AT ANY POINT AFTER ATTACHING THE VIRTUAL MEDIA
-- Attach the ISO to the servers and reboot them
-- Press F11 and change the boot order to Virtual Media
+
+5.2. Open the vitual console for each new OpenShift node
+
+In the browser tab with the iDRAC interface for each node:
+
+- Select "Launch" on the right side of the screen, under "Virtual Console Preview".
+- The first time you do this for each node, you will be prompted about popups being blocked. Do this:
+  - Click the popup icon in the top right of the window
+  - Change the radio button for "Always allow popups..."
+  - Select "Done"
+  - Close the popup window 
+  - Select  "Launch" again
+- Another popup about SSL may display briefly. Wait and it will disappear.
+- Another orange screen may appear briefly. Wait and it will disappear.
+
+5.3 Attach the ISO
+
+- *IMPORTANT: DO NOT CLOSE THE BROWSER AT ANY POINT AFTER ATTACHING THE VIRTUAL MEDIA!!*
+- Select "Connect Virtual Media"
+- Under "Map CD/DVD", select "Choose File"
+- Select the .iso file. As of the writing that file would have been you scp'd from the other bastion per the above instructions, and be located in your home directory).
+- Confirm the selection
+
+5.4 Reboot the server to begin the install
+
+- Go back to the main iDRAC window and reboot the server.
+- *WATCH THE VITUAL CONSOLE AND DO THIS WHEN IT BEGINS TO BOOT:* Press F11 and change the boot order to Virtual Media
+
+5.5 Monitor the install from the bastion
+
+- SSH into the .20 bastion.
+
 - From the staging directory that holds the recently created agent_iso you can follow the install by running
   ```
   openshift-install agent wait-for bootstrap-complete --dir <installation_directory>
@@ -155,9 +192,18 @@ These are:
   ```
   Once the bootstrap is complete, run this command. It will wait until all cluster operators are available, the worker nodes have joined, and the cluster is fully operational.
 
-- For troubleshooting once the install has sufficiently progressed you can ssh into them using the id_rsa_ocp key found in /root/ssh on the old bastion using core@ip, ie  
+5.6. Troubleshoot install problems
+
+*NOTE:* The install will appear to sit idle at various points, including one point where it displays a login prompt which will go away on its own. Be patient. If it looks like it is not progressing, wait at least 30 minutes before assuming it is broken.
+
+Once the install has progressed to the point that there is an OS running on the node and it is running an SSH daemon, you can ssh in to troubleshoot.
+
+Use the private key that correspons to the public key that you provided when you generated the ISO.
+
+Use the IP of the node that you provided in the installer file. Do not use the iDRAC IP.
+
   ```
-  ssh -i /root/ssh/id_rsa_ocp core@10.13.0.22
+  ssh -i /root/ssh/id_rsa_ocp core@<node IP>
   ```
 
 6. Post-Openshift Install Setup
