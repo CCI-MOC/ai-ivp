@@ -114,7 +114,10 @@ In the above example, to switch from the staging to infra environment, you would
 
 5. ATTACH ISO TO SERVERS AND REBOOT
 
-- Log into the new bastion's IDRAC at 10.6.1.52 and open Virtual Console
+- Log into the new bastion's IDRAC at 10.6.1.52.
+- In the IDRAC interface, go to Server (left navigation menu) -> Launch (right side, under Virtual Console Preview).
+- The virtual console window may prompt you to allow pop-ups. Approve, close the window, and try again.
+- You may see a screen that says "No Signal".
 - Log into RHEL and then open the IDRAC web console for the three servers at 
   ```
   Infra
