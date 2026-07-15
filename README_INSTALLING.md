@@ -10,7 +10,21 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 
 2. PREP
 - Make sure butane and openshift-install-fips are in the /usr/local/bin directory.
-- Create a custom-hosts.txt. (See https://access.redhat.com/support/cases/#/case/04442017 for more information).
+
+- To gather inromation about the nodes, you must connect to the node via ssh or the virtual console and then run the commands below.
+- If you already have OpenShift installed (i.e. are doing a reinstall), you can ssh in as the core user. `ssh -i <path to private key from install> core@<node IP>
+- If the nodes do not have an operating system on them yet (first install), you can boot from the vanilla CoreOS ISO. You can download it at https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/latest/ You want the one with a name similar to `rhcos-4.21.0-x86_64-live-iso.x86_64.iso`. Put this on the .30 bastion so you can mount it as virtual media in iDRAC and boot the server. Then use the virtual console to run the commands.
+
+- Log into each node and run 
+  ```
+  lsblk 
+  ```
+  And take note of the drives. Pick one that will be the OpenShift install and pick one that will be the install drive for etcd. 
+3. Create custom-hosts.txt
+- Create a custom-hosts.txt.
+
+See https://access.redhat.com/support/cases/#/case/04442017 for more information.
+
   The custom-hosts.txt follows the following format in Plaintext
   ```
   127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
@@ -28,12 +42,6 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
   Base64 Encode the File
   The MachineConfig object requires the file contents to be base64 encoded as a data URI. Run the following command in your terminal to get the encoded string:
 
-  Bash
-  ```
-  cat custom-hosts.txt | base64 -w0
-  ```
-
-  Update the main.yml hosts_custom with this base64 string.
   For example, this was the custom-hosts.txt for infra
 
   ```
@@ -49,11 +57,16 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
   10.11.0.22      mocsec-r4pac06u35-3a
   10.11.0.23      mocsec-r4pac06u37-3a
   ```
-- Log into each node and run 
+
+3.1 Get the base64 encoded version of custom-hosts.txt
+
+  Bash
   ```
-  lsblk 
+  cat custom-hosts.txt | base64 -w0
   ```
-  And take note of the drives. Pick one that will be the OpenShift install and pick one that will be the install drive for etcd. 
+
+  You will use this in the next step as the value for `hosts_custom`.
+
 4. ISO GENERATION
 
 - Checkout out the https://github.com/CCI-MOC/ai-ivp/ project. 
