@@ -4,7 +4,7 @@
   connection: local
 
   vars:
-    public_key_dir: "../admin_public_keys"
+    public_key_dir: "./admin_public_keys"
     sudo_timeout_mins: 30
 
   vars_files:
