@@ -113,7 +113,7 @@ In the above example, to switch from the staging to infra environment, you would
 
 - To create the ISO run 
   ```
-  ansible-playbook create_agent_iso.yaml -e "cluster_name=<cluser_name>"
+  ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=<cluser_name>"
   ```
 - The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 
@@ -221,17 +221,18 @@ Use the IP of the node that you provided in the installer file. Do not use the i
 
 6. Post-Openshift Install Setup
 
-- Adding Users
-  After someone logs in their username will be automatically created. It will be the same as their github username and its possible to run the following command before they log in . Give each username the correct role for access, ie for Cluster-Admin run
-  ```
-  oc adm policy add-cluster-role-to-user cluster-admin <your-github-username>
-  ```
-  
 - These steps must be performed after the OpenShift cluster install is complete, before Autoshift can be installed.
   1. Pre-configure the required secrets. 
      Since there is not a Secrets Mananger the following secrets will be needed to be created manually:
-	 - Create the namespace "cert-mananger" and "portworx"
-	 - Fill out and apply the following Secret under the "openshift-config" namespace:
+	 - Create these namespaces: "cert-mananger" and "portworx"
+
+         - Create a github client secret
+	 ```
+	 oc create secret generic github-client-secret --from-literal=clientId=<YOUR_GITHUB_ID> --from-literal=clientSecret=<YOUR_GITHUB_CLIENT_SECRET> --from-literal=teamst=<YOUR_GITHUB_CLIENT_TEAMS>-n openshift-config
+	 ```
+
+         The resulting Secret object should look like this:
+
 	 ```
 	 kind: Secret
 	 apiVersion: v1
@@ -244,14 +245,25 @@ Use the IP of the node that you provided in the installer file. Do not use the i
 	   teams: <Teams that are allow in >
 	 type: Opaque
 	  ```
-     This can be done by either creating the file manually in OpenShift or by running the command line
-	 ```
-	 oc create secret generic github-client-secret --from-literal=clientId=<YOUR_GITHUB_ID> --from-literal=clientSecret=<YOUR_GITHUB_CLIENT_SECRET> --from-literal=teamst=<YOUR_GITHUB_CLIENT_TEAMS>-n openshift-config
-	 ```
-	 - Creating the pure.json secret from the pure.json file under the portworx namespace
+
+         - Create a pure.json file
+         ```
+         {
+           "FlashBlades": [
+             {
+               "MgmtEndPoint": "10.3.11.50",
+               "APIToken": "T-ab3ca441-baf1-4742-8bb1-7c384562fd59",
+               "Realm": "infra-ocp-massopen",
+               "NFSEndPoint": "10.8.0.10"
+             }
+           ]
+         }
+         ``` 
+	 - Create the pure.json secret from the pure.json file under the portworx namespace
 	 ```
 	 oc create secret generic px-pure-secret --from-file=pure.json=<file path> --namespace portworx
 	 ```
+
 	 - Create the aws-route53-credentials secret in the cert-manager namespace. 
 	 ```
 		kind: Secret
@@ -277,6 +289,7 @@ Use the IP of the node that you provided in the installer file. Do not use the i
 	  - Choose all the default settings and install
 	  - After the Nmstate operator is installed go to it, click on the NMState tab, and create a default instanace of NMState (you do not have to fill out anything). 
 	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine
+           *Note:* These values work for both staging and infra because they have the same networking for portworx.
 	   ```
 	    kind: AdminNetworkPolicy
 		metadata:
@@ -322,12 +335,13 @@ Use the IP of the node that you provided in the installer file. Do not use the i
 	  
    3. Install portworx
      In order to install Autoshift we need the ability to create storage. Install and setting up Portworx will give our cluster access to storage on demand. 
-	 - Manually install the Potworx Operator from the Openshift Software Catelog. You can find it on the left side of the Console under Ecosystem -> Software Catalog
+	 - Manually install the Potworx Operator from the Openshift Software Catalog. You can find it on the left side of the Console under Ecosystem -> Software Catalog
 	 - Search for "Portworx" and click on "Portworx Enterprise Operator". You can keep all the default options. 
 	 - After installing go to Ecosystem -> Installed Operators -> Portworx Enterprise. Select "All Projects" on the upper Left-Center to check everwhere. 
 	 - Click on the StorageCluster Tab and create a new StorageCluster
+           *Note:* Thes values work for both staging and infra.
 	   ```
-				kind: StorageCluster
+	        kind: StorageCluster
                 apiVersion: core.libopenstorage.org/v1
                 metadata:
                   name: px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015
@@ -349,9 +363,10 @@ Use the IP of the node that you provided in the installer file. Do not use the i
 				  env:
 	   ```
 	   
-	  Since we have already setup our pure.json all we have to do now is watch the events to monitor the the Portworx installation. 
-    - After the portworx is done installing we need to create our new storage class that used portworx. 
-      From the OpenShift Console go to
+	 Watch the events to monitor the the Portworx installation. 
+    - After the portworx is done installing we need to create our new storage class that uses portworx. 
+
+      From the OpenShift Console go to:
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
 	  Apply the following file that will set Portworx as the default storage class. 
 	  ```
@@ -371,7 +386,7 @@ Use the IP of the node that you provided in the installer file. Do not use the i
                   backend: pure_file
                   pure_nfs_policy: 'infra-policy'
                   pure_nfs_server: "infra-server"
-                  pure_nfs_export_rules_access: "no-squash"
+                  # pure_nfs_export_rules_access: "no-squash" # COMMENTED SINCE LAST INSTALL. NEED TO UPDATE ON PURE SIDE.
                   pure_nfs_export_rules_client: "10.8.0.0/24"
                 provisioner: pxd.portworx.com
                 reclaimPolicy: Delete
@@ -419,6 +434,16 @@ Use the IP of the node that you provided in the installer file. Do not use the i
 	- The Route for ArgoCD can be found under Network -> Routes in the openshift-gitops namespace. 
 	To find the admin password for ArgoCD go to Workload -> Secrets and check in the infra-gitops-cluster secret in the openshift-gitops namespace. 
 
+8. Adding Users
+
+For each user that wants to login using GitHub, add them to the appropiate role. The GitHub login process will create a User object with a name that is the same as their github username.
+
+For example, to give a user Cluster-Admin access, run:
+
+```
+oc adm policy add-cluster-role-to-user cluster-admin <your-github-username>
+```
+ 
 ## TROUBLESHOOTING
 
 * If the installation hangs and the terminal for one of the nodes being installed displays:
