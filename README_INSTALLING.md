@@ -90,7 +90,14 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 	ssh_key: <use id_rsa_ocp.pub under /root/ssh on baston>
   ```
    
-- Update 98-master-var-lib-etcd.j2 to make sure the correct drives are hosting etcd for each node
+- Update 98-master-var-lib-etcd.j2 to make sure the correct drives are hosting etcd for each node. Edit the line that looks like this, replacing the hosts and device names to match your environment:
+```
+            ExecStart=/bin/bash -c 'HOST=$(hostname); if [[ "$HOST" == *"u33-3b"* ]] || [[ "$HOST" == *"u35-3b"* ]]; then TARGET="/dev/sdc"; elif [[ "$HOST" == *"u37-3b"* ]]; then TARGET="/dev/sdb"; else exit 0; fi; sgdisk -Z $TARGET && sgdisk -n 1:0:0 -c 1:etcd $TARGET && partprobe $TARGET && udevadm settle && mkfs.xfs -f /dev/disk/by-partlabel/etcd'
+```
+In the above example, to switch from the staging to infra environment, you would replace `u35-3b` with `u35-3a`, and `u35-3b` with `u35-3b`, etc. And for each host you replace the device name that follows it with the device name for the etcd install that you identified in an earlier step (see the PREP section).
+
+*TODO:* use template variables for these values with Ansible and put the values in an Ansible inventory file.
+
 - To create the ISO run 
   ```
   ansible-playbook create_agent_iso.yaml -e "cluster_name=<cluser_name>"
