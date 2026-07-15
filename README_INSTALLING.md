@@ -104,26 +104,42 @@ In the above example, to switch from the staging to infra environment, you would
   ```
 - The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 
-4. PUSH ISO TO NEW BASTION
+4. Create a user account on the GUI bastion
 
-- The new bastion is at 10.11.0.30, ssh 10.11.0.30 -l root, you may need to contact Naved to get access
-- You can scp the file over from the old bastion, I've been using scp -i ssh/id_rsa dbrletic@10.11.0.20:/home/dbrletic/agent.x86_64.iso
-- You'll need to create a user identity on the new bastion, an ssh key on the bastion, and add that key to your authorized_keys file in
-- You might also need to copy the iso to your home folder on the old bastion and modify the scp command to pull from that
-- Once the iso is on the new bastion, copy it to your home directory to simplify the next step
+*TODO:* We should only need one bastion server. We ran into an issue where we needed the GUI desktop to have a browser to mount ISOs (see below). The fastest way to get this was to use a separate server to install an instance of RHEL that has a GUI. In the future we can do the steps below on the same bastion server. We tried at length to mount the ISO in a way that did not require a browser, without success (tried NFS and HTTP mounts). One of these was not supported, the other did not work. We suspect that there is a bug or incompatibility in idrac preventing us from using the other.
 
-5. ATTACH ISO TO SERVERS AND REBOOT
+- Generate a ssh keypair on .20. `ssh-keygen` and follow the instructions. *Set a passphrase because others will have access to the private key file!*
+- An existing administrator on .30 will must to create a user for you on the GUI bastion.30, following the instructions in docs/README_BASTION_ADMINS.md. You will have to provide them with the public key you generated on .20. By default it is at ~/.ssh/id_rsa.pub.
+- They will ask you to ssh into the new bastion at `ssh 10.11.0.30`. Run ssh from .20 to connect to .30.
 
-- Log into the new bastion's IDRAC at 10.6.1.52.
+4.1 Copy the .ISO file from .20 to .30
+
+*TODO:* remove this step when we reinstall the main bastion server to have a gui desktop (or eliminate the need to mount ISOs this way).
+
+- On .20, run the scp command to copy the ISO to the .30 bastion. Put the file in your home directory on .30. Example: `scp -i ssh/id_rsa agent.x86_64.iso dbrletic@10.11.0.30:/home/dbrletic/agent.x86_64.iso`. 
+
+5. Log into the desktop gui of the GUI bastion
+
+- Log into the .30 bastion's IDRAC at 10.6.1.52.
 - In the IDRAC interface, go to Server (left navigation menu) -> Launch (right side, under Virtual Console Preview).
 - The virtual console window may prompt you to allow pop-ups. Approve, close the window, and try again.
-- You may see a screen that says "No Signal".
-- Log into RHEL and then open the IDRAC web console for the three servers at 
+- You may see a screen that says "No Signal". If so, use the Refresh button at the top of the pop-up window.
+- You will see a login screen for a RHELdesktop. Log using your .30 user password (set when your ran `passwd` on .30).
+
+5.1.  ATTACH ISO TO SERVERS AND REBOOT
+
+Run these instructions using the gui desktop of the .30 bastion.
+
+- Open Chrome (click the red fedora icon to the top left of the desktop and type 'Chrome', then select the option.
+- WARNING: Do *NOT* use Firefox. It will complain about TLS related issues with no easy way to accept the risk and continue.
+- In Chrome, use tabs to open the IDRAC web console for each server you will install OpenShift on.
+
+These are:
   ```
   Infra
-  10.6.1.175,185,195
+  10.6.1.175, .185, .195
   Staging
-  10.6.1.176,186,196
+  10.6.1.176, .186, .196
   ```
 - Open their web consoles an click virtual media
 - DO NOT CLOSE THE BROWSER AT ANY POINT AFTER ATTACHING THE VIRTUAL MEDIA
