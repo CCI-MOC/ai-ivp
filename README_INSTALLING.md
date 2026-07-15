@@ -114,6 +114,18 @@ We will use one device as the OpenShift boot drive, and the other will be dedica
 
 Choose one device for each purpose and take note of the two device names and their purposes for each node.
 
+At the time of writing, the known device names are:
+
+```
+Infra:
+.21 - sda, sdb
+.22 - sdb, sdc
+.23 - sdb, sdc
+
+Staging:
+*TODO:* ssh in and check before the reinstall
+```
+
 9. Create custom-hosts.txt
 
 Do this on the .20 bastion
