@@ -82,11 +82,14 @@ In the Virtual Console for each node:
 - Under "Map CD/DVD", select "Choose File"
 - Select the RHEL 9 boot .iso file.
 - Select "Map Device"
-- Confirm the bar at the top of the virtual console says the device is mounted.
+- Confirm the bar at the top of the virtual console says "Virtual Media is connected", and "Devices Mapped: 1" and lists the name of your .iso file.
+- Close the Virtual Media popup.
 - From the iDRAC console for the node, power cycle the server.
-- Watch the top of the screen as the machine boots. In a moment, text will appear with options to press various keys including F11. This will happen when the progress bar is about half way full.
-- When the option appears, press `F11` and change the boot order to Virtual Media
-- Select "One Shot..." -> "Virtual Optical Drive"
+- Switch back to the Virtual Console popup.
+- Watch the top of the screen as the machine boots. There is a progress bar at the bottom, and a Dell symbol to the top left.
+- Press the "Keyboard" button at the top of the window to bring up a virtual keyboard. Use this instead of your physical keyboard for the steps. You have to quickly press keys, and the input from your physical keyboard can sometimes be delayed in this interface.
+- When the bar is approximately one third full, some text will appear to the right of the Dell symbol. As soon as that text appears option appears, quickly press `F11`.
+- Close the virtual keyboard popup.
 - You will see the text change to "Entering Boot Manager" with blue highlighting. Wait a minute.
 - Select "One-shot UEFI Boot Menu"
 - Select "Virtual Optical Drive"
@@ -220,20 +223,26 @@ In the above example, to switch from the staging to infra environment, you would
 
 13. Attach the ISO
 
-- *IMPORTANT: DO NOT CLOSE THE BROWSER AT ANY POINT AFTER ATTACHING THE VIRTUAL MEDIA!!*
+- *IMPORTANT: DO NOT CLOSE THE BROWSER UNTIL CoreOS IS INSTALLED!!* Closing the window before that (which takes a long time), will cause the install to fail. If this happens, reboot the server, which will restart the long-running install process.
 - Select "Connect Virtual Media"
 - Under "Map CD/DVD", select "Choose File"
-- Select the installation .iso file. As of the writing that file would have been you scp'd from the other bastion per the above instructions, and be located in your home directory).
-- Confirm the selection
+- Select the installation .iso file. This file would have been you scp'd from the other bastion per the above instructions, and be located in your home directory).
+- Select "Map Device"
+- Confirm the bar at the top of the virtual console says "Virtual Media is connected", and "Devices Mapped: 1" and lists the name of your .iso file.
+- Close the Virtual Media popup.
 
 14. Reboot the server to begin the install
 
-- Switch to the main iDRAC window and reboot the server.
-- *SWITCH BACK THE VITUAL CONSOLE AND DO THIS WHEN QUICKLY THE SERVER BEGINS TO BOOT:*
-  - The input from your physical keyboard to the virtual console will sometimes have latency. To overcome this, select the "Keyboard" button at the top of the virtual console menu. This will bring up a popup that looks like a keyboard. You can click the keys.
-  - Watch the top of the screen as the machine boots. In a moment, text will appear with options to press various keys including F11. This will happen when the progress bar is about half way full.
-  - When the option appears, press `F11` and change the boot order to Virtual Media
-  - Select "One Shot..." -> "Virtual Optical Drive"
+- From the iDRAC console for the node, power cycle the server.
+- Switch back to the Virtual Console popup.
+- Watch the top of the screen as the machine boots. There is a progress bar at the bottom, and a Dell symbol to the top left.
+- Press the "Keyboard" button at the top of the window to bring up a virtual keyboard. Use this instead of your physical keyboard for the steps. You have to quickly press keys, and the input from your physical keyboard can sometimes be delayed in this interface.
+- When the bar is approximately one third full, some text will appear to the right of the Dell symbol. As soon as that text appears option appears, quickly press `F11`.
+- Close the virtual keyboard popup.
+- You will see the text change to "Entering Boot Manager" with blue highlighting. Wait a minute.
+- Select "One-shot UEFI Boot Menu"
+- Select "Virtual Optical Drive"
+- Confirm the selection
 
 15. Monitor the install from the bastion
 
