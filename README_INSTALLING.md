@@ -188,8 +188,11 @@ In the browser tab with the iDRAC interface for each node:
 
 5.4 Reboot the server to begin the install
 
-- Go back to the main iDRAC window and reboot the server.
-- *WATCH THE VITUAL CONSOLE AND DO THIS WHEN IT BEGINS TO BOOT:* Press F11 and change the boot order to Virtual Media
+- Switch to the main iDRAC window and reboot the server.
+- *SWITCH BACK THE VITUAL CONSOLE AND DO THIS WHEN QUICKLY THE SERVER BEGINS TO BOOT:*
+  - The input from your physical keyboard to the virtual console will sometimes have latency. To overcome this, select the "Keyboard" button at the top of the virtual console menu. This will bring up a popup that looks like a keyboard. You can click the keys.
+  - When the appropriate screen appears (TODO: describe it), press `F11` and change the boot order to Virtual Media
+  - TODO: describe the menu options to change the boot order on an FC430
 
 5.5 Monitor the install from the bastion
 
