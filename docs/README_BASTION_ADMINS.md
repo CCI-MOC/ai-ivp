@@ -20,7 +20,7 @@ ssh myuser@<Bastion Server IP>
 1. Install Dependencies (One time setup per bastion server)
 Install Git, Ansible, and the required Ansible collections the bastion server:
 ```bash
-dnf install -y git ansible-core
+sudo dnf install -y git ansible-core
 ansible-galaxy collection install ansible.posix
 ```
 
