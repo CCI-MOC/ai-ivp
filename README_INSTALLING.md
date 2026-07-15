@@ -340,3 +340,20 @@ In the above example, to switch from the staging to infra environment, you would
 	
 	- The Route for ArgoCD can be found under Network -> Routes in the openshift-gitops namespace. 
 	To find the admin password for ArgoCD go to Workload -> Secrets and check in the infra-gitops-cluster secret in the openshift-gitops namespace. 
+
+## TROUBLESHOOTING
+
+* If the installation hangs and the terminal for one of the nodes being installed displays:
+```
+INFO <hostname> updated status from preparing-for-installation to preparing-successful (Host finished successfully to prepare for installation)
+```
+The likely cause is that the CoreOS instance being used by the installer is not using FIPS.
+
+You can confirm whether this is the problem by sshing into the problematic node, and running `sudo journalctl -u assisted-service.service --no-pager`.
+
+If this is the problem, you wil see the following message:
+```
+level=error msg=failed to fetch Master Machines: failed to load asset \"Install Config\": failed to create install config: invalid \"install-config.yaml\" file: fips: Forbidden: target cluster is in FIPS mode, use the FIPS-capable installer binary for RHEL 9 on a host with FIPS enabled.\nlevel=erro <TRUNCATED>: exit status 3" go-id=87918 pkg=cluster-state request_id=
+It was created using openshift-install-fips AND on a system with FIPS enabled.
+```
+To fix this, reboot the node and press (TBD key) to enter the egrub menu. Then append ` fips=1` to the line that starts with the `linux` command. This should be the second line deisplayed. It is a long line with multiple options. Then continue the boot.
