@@ -8,50 +8,61 @@ https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/
 
 1. Configure the Host Inventory Settings
 
-   - From the Redhat Console Switch to Fleet Management on the Upper Left
+   - From the OpenShift Console use the dropdown to switch from "Core Platform" to "Fleet Management"
    - Go to Infrastructure -> Host Inventory 
    - Click on Configure Host Inventory settings on the upper right
    - Select how much Database storage, System storage, and Image storage for the HCP
 
-2. Create a Create a Infrastructure Environment 
+2. Configure host inventory settings
 
-   - From the Redhat Console Switch to Fleet Management on the Upper Left
-   - Go to Infrastructure -> Host Inventory 
+   - From the Redhat Console Switch to Fleet Management on the Upper Left.
+   - Go to Infrastructure -> Host Inventory.
+   - Select "Configure host inventory settings" on the upper right:
+   - Fill in the vaues
+     - Database storage: 10
+     - System storage: 100
+     - Image storage: 50
+   - Select "Configure" to confirm.
+  
+2.1. Create an Infrastructure Environment 
+
    - Click on Create a Infrastructure Environment 
-   - Fill out the form and add a ssh public key, pull secret, location and a name. 
+   - Fill out the form and add a ssh public key, pull secret, location and a name. Example values:
+     - Name: staging
+     - Location: east
+     - Network type: DHCP only
+     - CPU architecture: x86_64
+     - Proxy settings: Defaults
+     - Pull secret: Generate using MOC account 
+     - SSH public key: generate a keypair for this cluster
+     - NTP sources: Auto synchronized NTP (default)
+
+ 
+3. Add Hosts to the Infrastructure Environment
    
-3. Add Hosts
-   
-   - From the Redhat Console Switch to Fleet Management on the Upper Left
-   - Go to Infrastructure -> Host Inventory 
    - Click on the Host Inventory you created
-   - Click on the Host tab
-   - On the upper right click on the Add Host button. There will be mutiple options but the simplest is "With Discovery ISO". Select "Minimal image file", download, and boot to that image using iDRAC for each node you want to add to the cluser. 
-     Once iDRAC is setup to use SSL 1.3 you can use the "Add host using Baseboard Management Controller (BMC)" to directly connect to the iDRAC and add the host. 
-	 Once a host is ready it will show up under the Host Inventory File
+   - Click on the Hosts tab
+   - On the upper right click on the Add Host button.
+   - Select "With Discovery ISO". Select "Minimal image file", download, and boot to that image using iDRAC for each node you want to add to the cluser. 
+   - *TODO:* Instead of "With Discovery ISO", we would prefer to use a different method that does not require an ISO. "With BMC form" would allow OpenShift to connect directly to iDRAC and install OpenShift on the node. We cannot do this with the FC430/FC830 hardware because the redfish API does not support TLS 1.3.
+   - Leave "Minimal image file" selected (this is a smaller ISO upload. With this option, the node downloads the additional data from the hosting cluster.)
+   - Select "Generate Discovery ISO"
+   - This may take up to 2 minutes.
+   - When the generation is finished, select "Download Discovery ISO".
+   - The ISO will be downloaded to your local machine.
     
-	 
 4. Creating a Cluster
   
-   - Once all the hosts are ready and you are in the Fleet Management view go to Infrastructure -> Clusters
-   - Click on Create Cluster button in the upper middle
-   - Since we are doing Bare metal click on Host Inventory
-   - On Control plane type - Host Inventory click on Hosted
-   - Fill out the form. 
-     **TO CHANGE THE ETCD HOST LOCATION ** 
-	 - On the upper middle click the slider to YAML: On
-	 Under spec add
-	 ```
-	 spec:
-       etcd:
-         managementType: Managed
-         managed:
-           storage:
-             type: PersistentVolume
-             persistentVolume:
-               storageClassName: <name of storage class to use>
-     ```
-	 Below is a sample HostCluster for staging
+   - From the Fleet Management view go to "Infrastructure" -> "Clusters"
+   - Select "Create Cluster" at the top
+   - Click on "Host Inventory"
+   - Select "Hosted"
+   - "Select a credential" -> "Add credential". Use these values:
+     - Credential name: <name of your cluster>
+     - Namespace: <name of your cluster> (You may have to create this namespace)
+     - Base DNS domain: ocp.massopen.cloud
+   - "Select a credential" again and select the one you just created.
+   - Fill out the rest of the form. Use the following YAML for reference, pulling out the values on the form.
 		```	 
 		apiVersion: hypershift.openshift.io/v1beta1
 		kind: HostedCluster
@@ -185,11 +196,39 @@ https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/
 		  certPolicyController:
 			enabled: true
 		```	 
-		You can click on the cluster name from the Cluster tab to monitor progress, download kubeadmin file, etc. For troubleshooting after the 
+   - At the top of the page, select the slider for "YAML On". This will allow us to edit a setting that is not present on the form.
+   - Add the yaml snippet to configure etcd to use the dedicated disk. Under HostedCluster object .spec field, add this snippet:
+     ```
+       etcd:
+         managementType: Managed
+         managed:
+           storage:
+             type: PersistentVolume
+             persistentVolume:
+               storageClassName: <name of storage class to use>
+     ```
+   - Select Next
+   - On the Node pools page, choose the nodes from the host inventory that you want to use for this cluster.
+   - Select Next
+   - Fill out Networking details:
+     - NotePort
+     - Host port: TBD
+     - Check the "Use advanced networking" checkbox
+     - Cluster network CIDR: TBD
+     - Cluster network host prefix: TBD
+     - Service network CIDR: TBD
+     - Leave "Show proxy settings" unselected
+   - Select Next
+   - Review the details
+   - Select "Create"
+
+   - You can click on the cluster name from the Cluster tab to monitor progress, download kubeadmin file, etc.
+
 5.  Setting up Metallb
   
 	- After the cluster is setup and installed download the kudeadmin file from the cluster panel. This will allow you to directly access the cluster without having to log in through the console
 	
+    
 	1. Install the MetalLB Operator
 	   Create a file named 1-metallb-operator.yaml with the following contents		
 		```
