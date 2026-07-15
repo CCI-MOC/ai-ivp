@@ -21,6 +21,7 @@ ssh myuser@<Bastion Server IP>
 Install Git, Ansible, and the required Ansible collections the bastion server:
 ```bash
 dnf install -y git ansible-core
+ansible-galaxy collection install ansible.posix
 ```
 
 2. Clone this repository locally (One time setup per user that creates accounts)
@@ -68,7 +69,7 @@ vi playbooks/admin_public_keys/jsmith.pub
 Run the playbook for each user.
 
 ```bash
-ansible-playbook playbooks/add-bastion-admin.yaml -e "username=<Target_Username>" --ask-vault-pass
+sudo ansible-playbook playbooks/add-bastion-admin.yaml -e "username=<Target_Username>" --ask-vault-pass
 ```
 
 6. Contact the new user
