@@ -21,7 +21,7 @@ ssh myuser@<Bastion Server IP>
 Install Git, Ansible, and the required Ansible collections the bastion server:
 ```bash
 sudo dnf install -y git ansible-core
-ansible-galaxy collection install ansible.posix
+sudo ansible-galaxy collection install ansible.posix
 ```
 
 2. Clone this repository locally (One time setup per user that creates accounts)
