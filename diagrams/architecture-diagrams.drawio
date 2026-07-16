@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2026-07-14T20:08:49.315Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="Uc3p6jadwZIzr9MrxQmi" scale="1" border="0" version="24.4.6" type="device" pages="6">
+<mxfile host="Electron" modified="2026-07-15T16:18:21.111Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="Ab0y018eb273Lk4e4N05" scale="1" border="0" version="24.4.6" type="device" pages="6">
   <diagram name="HCP_Logical_Deployment_Diagram" id="Z3SrGU5thELAxrZcLja-">
     <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="750" pageHeight="550" math="0" shadow="0">
       <root>
@@ -560,7 +560,7 @@
         <mxCell id="oXKFyI1MxvGWj9UEGf56-66" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="oXKFyI1MxvGWj9UEGf56-40" target="oXKFyI1MxvGWj9UEGf56-12" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="oXKFyI1MxvGWj9UEGf56-40" value="&lt;b&gt;Infra-Storage VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Storage traffic" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" parent="1" vertex="1">
+        <mxCell id="oXKFyI1MxvGWj9UEGf56-40" value="&lt;b&gt;Staging-Storage VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Storage traffic" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" parent="1" vertex="1">
           <mxGeometry x="766.74" y="480" width="160" height="80" as="geometry" />
         </mxCell>
         <mxCell id="oXKFyI1MxvGWj9UEGf56-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="oXKFyI1MxvGWj9UEGf56-43" target="oXKFyI1MxvGWj9UEGf56-39" edge="1">
@@ -591,7 +591,7 @@
         <mxCell id="oXKFyI1MxvGWj9UEGf56-67" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="oXKFyI1MxvGWj9UEGf56-45" target="oXKFyI1MxvGWj9UEGf56-12" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="oXKFyI1MxvGWj9UEGf56-45" value="&lt;b&gt;Infra-Production VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Storage traffic" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" parent="1" vertex="1">
+        <mxCell id="oXKFyI1MxvGWj9UEGf56-45" value="&lt;b&gt;Production-Storage VLAN&lt;/b&gt;&lt;br&gt;&lt;br&gt;Storage traffic" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=default;dashed=1;fillColor=none;fontSize=14;verticalAlign=top;" parent="1" vertex="1">
           <mxGeometry x="766.74" y="600" width="160" height="80" as="geometry" />
         </mxCell>
         <mxCell id="oXKFyI1MxvGWj9UEGf56-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="oXKFyI1MxvGWj9UEGf56-48" target="oXKFyI1MxvGWj9UEGf56-44" edge="1">
