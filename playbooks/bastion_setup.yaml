@@ -2,7 +2,7 @@
 - name: Setup OpenShift 4.21 Bastion Infrastructure
   hosts: localhost
   connection: local
-  become: yes
+  become: true
   vars:
     # OpenShift 4.21.0 Specifics
     ocp_version: "4.21.0"
@@ -13,13 +13,13 @@
 
   tasks:
     - name: Create temporary directory for downloads
-      file:
+      ansible.builtin.file:
         path: "{{ tmp_dir }}"
         state: directory
         mode: '0755'
 
     - name: Install System Utilities and Infrastructure Services
-      dnf:
+      ansible.builtin.dnf:
         name:
           - git
           - jq
@@ -29,17 +29,17 @@
           - wget
           - tar
           - bind-utils
-          - httpd 
+          - httpd
         state: present
 
     - name: Start and enable Apache (httpd)
-      service:
+      ansible.builtin.service:
         name: httpd
         state: started
-        enabled: yes
+        enabled: true
 
     - name: Download OpenShift 4.21 Client and Installer
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ base_url }}/{{ item }}"
         dest: "{{ tmp_dir }}/{{ item }}"
       loop:
@@ -47,16 +47,16 @@
         - openshift-install-linux.tar.gz
 
     - name: Extract oc, kubectl, and openshift-install
-      unarchive:
+      ansible.builtin.unarchive:
         src: "{{ tmp_dir }}/{{ item }}"
         dest: "{{ bin_dir }}"
-        remote_src: yes
+        remote_src: true
       loop:
         - openshift-client-linux.tar.gz
         - openshift-install-linux.tar.gz
 
     - name: Ensure OpenShift binaries are executable
-      file:
+      ansible.builtin.file:
         path: "{{ bin_dir }}/{{ item }}"
         mode: '0755'
         owner: root
@@ -69,46 +69,44 @@
     - name: Install Helm 3
       block:
         - name: Download Helm binary
-          get_url:
+          ansible.builtin.get_url:
             url: https://get.helm.sh/helm-v3.20.2-linux-amd64.tar.gz
             dest: /tmp/helm.tar.gz
             mode: '0644'
 
         - name: Unarchive Helm binary
-          unarchive:
+          ansible.builtin.unarchive:
             src: /tmp/helm.tar.gz
             dest: /tmp
-            remote_src: yes
+            remote_src: true
 
         - name: Move Helm to bin directory
-          copy:
+          ansible.builtin.copy:
             src: /tmp/linux-amd64/helm
             dest: "{{ bin_dir }}/helm"
             mode: '0755'
-            remote_src: yes
+            remote_src: true
 
     - name: Verify Installations
-      shell: "{{ bin_dir }}/{{ item }}"
+      ansible.builtin.command: "{{ item.0 }}/{{ item.1 }}"
       loop:
-        - "oc version --client"
-        - "openshift-install version"
-        - "helm version --short"
-      register: version_output
-      changed_when: false
-    
-    - name: Verify httpd
-      shell: "{{ sbin_dir }}/{{ item }}"
-      loop:
-        - "httpd -v" # Added httpd verification
+        - ["{{ bin_dir }}", "oc version --client"]
+        - ["{{ bin_dir }}", "openshift-install version"]
+        - ["{{ bin_dir }}", "helm version --short"]
+        - ["{{ sbin_dir }}", "httpd -v"]
+      loop_control:
+        label: "{{ item.1 }}"
       register: version_output
       changed_when: false
 
     - name: Display Binary Versions
-      debug:
+      ansible.builtin.debug:
         msg: "{{ item.stdout }}"
       loop: "{{ version_output.results }}"
+      loop_control:
+        label: "{{ item.item.1 }}"
 
     - name: Cleanup temporary files
-      file:
+      ansible.builtin.file:
         path: "{{ tmp_dir }}"
         state: absent
