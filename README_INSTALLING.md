@@ -23,7 +23,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 
 4. Log into the desktop gui of the GUI bastion
 
-- Log into the .30 bastion's iDRAC at 10.6.1.52.
+- Using a browser on your desktop, iog into the .30 bastion's iDRAC at 10.6.1.152.
 - In the iDRAC interface, go to Server (left navigation menu) -> Launch (right side, under Virtual Console Preview).
 - The virtual console window may prompt you to allow pop-ups. Approve, close the window, and try again.
 - You may see a screen that says "No Signal". If so, use the Refresh button at the top of the pop-up window.
@@ -167,7 +167,7 @@ See https://access.redhat.com/support/cases/#/case/04442017 for more information
   10.11.0.23      mocsec-r4pac06u37-3a
   ```
 
-10. Get the base64 encoded version of custom-hosts.txt
+10. Get the base64 encoded version of custom-hosts.txt && echo
 
   Bash
   ```
