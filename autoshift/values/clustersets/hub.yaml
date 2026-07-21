@@ -109,7 +109,7 @@ hubClusterSets:
       odf: 'true'
       odf-channel: stable-4.21
       odf-multi-cloud-gateway: standalone
-      odf-version: 'odf-operator.v4.21.8-rhodf'
+      odf-version: 'odf-operator.v4.21.9-rhodf'
       odf-source: redhat-operators
       odf-source-namespace: openshift-marketplace
       odf-subscription-name: odf-operator
