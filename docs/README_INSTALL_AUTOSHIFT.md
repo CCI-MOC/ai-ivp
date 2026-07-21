@@ -35,6 +35,8 @@ If your clone of AutoShiftv2 requires credentials or you would like to add crede
 Using Helm, install OpenShift GitOps:
 
 ```console
+oc new-project charts
+oc project charts
 helm upgrade --install openshift-gitops openshift-gitops -f policies/stable/openshift-gitops/values.yaml
 ```
 
