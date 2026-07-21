@@ -14,7 +14,7 @@ What AutoShift does is it uses OpenShift GitOps to declaratively manage RHACM wh
 📚 **[Complete Documentation](docs/)** - Start here for guides and tutorials
 
 **Quick Links:**
-- 🚀 [Quick Start Guide](docs/quickstart.md) - Full installation walkthrough (Source and OCI)
+- 🚀 [Installing Autoshift](docs/README_INSTALL_AUTOSHIFT.md) - Full installation walkthrough
 - 📦 [Release & OCI Guide](docs/releases.md) - Release process, OCI mode, and version management
 - 📊 [Gradual Rollout](docs/gradual-rollout.md) - Multi-version deployments
 - 📋 [Values Reference](docs/values-reference.md) - All cluster labels and configuration options
@@ -39,9 +39,9 @@ The hub cluster is the main cluster with RHACM and its core components installed
 
 AutoShift uses a **composable values file** pattern. Configuration is split into focused files under `autoshift/values/` that you combine in your ArgoCD Application. See the [Values Reference](docs/values-reference.md) for the full file structure, composition details, precedence rules, and all available cluster labels.
 
-## Quick Install
+## Install
 
-For full step-by-step instructions, see the [Quick Start Guide](docs/quickstart.md).
+For full step-by-step instructions, see [Installing Autoshift](docs/README_INSTALL_AUTOSHIFT.md).
 
 ### From Source (Git)
 
