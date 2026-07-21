@@ -150,14 +150,7 @@ If you need to update your values file with different desired labels, see the [A
 Given the labels and cluster sets specified in the supplied values file, ACM cluster sets will be created. Add the hub cluster (`local-cluster`) to the appropriate clusterset:
 
 ```console
-# Replace 'hub' with the name of your clusterset
 oc label managedcluster local-cluster cluster.open-cluster-management.io/clusterset=hub --overwrite
-```
-
-For managed clusters, assign them to their clusterset the same way:
-
-```console
-oc label managedcluster <cluster-name> cluster.open-cluster-management.io/clusterset=managed --overwrite
 ```
 
 Alternatively, you can assign clusters via the ACM Console at **All Clusters > Infrastructure > Clusters > Cluster Sets**. When provisioning a new cluster from ACM, you can also select the desired clusterset at time of creation.
