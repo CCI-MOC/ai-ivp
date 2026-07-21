@@ -11,7 +11,7 @@ This guide walks through a complete AutoShift installation from start to finish.
 
 ### Minimum Hub Cluster Requirements
 
-All hub clusters **must** have the following configuration in their `hubClusterSets`:
+All hub clusters **must** have the following configuration in their Helm values files:
 
 * `gitops: 'true'` - OpenShift GitOps (ArgoCD) is required to deploy AutoShift
 * ACM is automatically installed on all hub clustersets by policy (no labels required)
