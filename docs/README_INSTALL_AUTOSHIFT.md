@@ -1,4 +1,4 @@
-# AutoShift Quick Start Guide
+# AutoShift Installation Guide
 
 This guide walks through a complete AutoShift installation from start to finish.
 

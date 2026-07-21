@@ -1,4 +1,4 @@
-# Instructions to install an "Infra" cluster
+# Instructions to install a Hub cluster
 
 ## Background
 * See this link for background information on what the Agent-Iso is and how it works

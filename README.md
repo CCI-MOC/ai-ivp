@@ -105,13 +105,13 @@ This repository includes code adapted from the [open source AutoshiftV2 project]
 1. Configure and secure access for administrative users to the bastion server following [these instructions](docs/README_BASTION_ADMINS.md).
 2. Provision the bastion server with the utilities and configuration required to install the OpenShift Infra cluster and manage the environment. (TODO: add link after merge)
 
-## Infra Cluster Install
+## Hub Cluster Install
 
-An 'infra' cluster is a management/hub cluster that hosts common services and manages other clusters. There is one per enclave. 'Infra' is the name for the infra cluster in the Tenant enclave, and 'Dev-Infra' is the name for the infra cluster in the Sandbox enclave.
+An hub cluster is a management cluster that hosts common services and manages other clusters. There is one per enclave. 'Infra' is the name of the hub cluster in the Tenant enclave, and 'Dev-Infra' is the name of the hub cluster in the Sandbox enclave.
 
-Infra clusters are installed differently than managed clusters. They are the first cluster installed when a new enclave is built. During the infra cluster install, the management tooling and common services for the enclave are not available because they live on the infra cluster. So the install must be done differently to bootstrap them.
+Hub clusters are installed differently than managed clusters. They are the first cluster installed when a new enclave is built. During the hub cluster install, the management tooling and common services for the enclave are not available because they live on the hub cluster. The install must be done differently in order to bootstrap them.
 
-To install an infra cluster:
-1. First install the cluster itself. Follow the instructions in [Installing an Infra Cluster](/docs/README_INSTALL_INFRA.md).
+To install a hub cluster:
+1. First install the cluster itself. Follow the instructions in [Installing a Hub Cluster](/docs/README_INSTALL_HUB.md).
 2. Then install Autoshift on the new infra cluster. Follow the instructions in [Installing Autoshift](/docs/README_INSTALL_AUTOSHIFT.md).
 
