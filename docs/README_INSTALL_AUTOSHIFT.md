@@ -124,7 +124,7 @@ open-cluster-management   multiclusterhub   Running      6m28s   2.13.2         
 > [!TIP]
 > The previously installed OpenShift GitOps and ACM will be controlled by AutoShift after it is installed for version upgrading
 
-Using helm and the values file for your cluster, install AutoShift. Values files for each infra cluster are versioned at [Autoshift Cluster Labels Values Reference](/autoshift/install/app-of-apps/).
+Using helm and the values file for your cluster, install AutoShift. Values files for each infra cluster are located at [autoshift/install/app-of-apps/](/autoshift/install/app-of-apps/).
 
 ```
 oc apply -f autoshift/install/app-of-apps/infra.yaml
