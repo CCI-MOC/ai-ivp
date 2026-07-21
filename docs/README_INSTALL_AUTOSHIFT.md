@@ -48,7 +48,7 @@ After the installation is complete, verify that all the pods in the `openshift-g
 oc get pods -n openshift-gitops
 ```
 
-This command should return something like this:
+The command should return something like this:
 
 ```console
 NAME                                                                READY   STATUS    RESTARTS   AGE
@@ -88,11 +88,14 @@ NAMESPACE          NAME               AGE
 openshift-gitops   infra-gitops       29s
 ```
 
-Test logging into the ArgoCD console
+If this is not the case you may need to run the `helm upgrade ...` command again.
+
+#### Test logging into the ArgoCD console
 
 > [!NOTE]
 > At the time of writing, OpenShift user accounts do not have permission to view the ArgoCD console. You must login using the ArgoCD `admin` account. Fixing this is a TODO item.
 
+To login to the ArgoCD console:
 * In the OpenShift console, go to Networking -> Routes.
 * Using the Project dropdown at the top, select 'openshift-gitops'.
 * Click the URL in the Location column.
@@ -101,8 +104,6 @@ Test logging into the ArgoCD console
 * For username, enter `admin`.
 * To find the admin password for ArgoCD go to Workload -> Secrets and check in the infra-gitops-cluster secret in the openshift-gitops namespace.
 * Select Sign In. You should see a screen that says 'No applications available to you just yet'.
-
-If this is not the case you may need to run `helm upgrade ...` command again.
 
 ### Step 3: Install Advanced Cluster Management (ACM)
 
