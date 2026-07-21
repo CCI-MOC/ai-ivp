@@ -103,7 +103,10 @@ This repository includes code adapted from the [open source AutoshiftV2 project]
 ## Bastion Setup
 
 1. Configure and secure access for administrative users to the bastion server following [these instructions](docs/README_BASTION_ADMINS.md).
-2. Provision the bastion server with the utilities and configuration required to install the OpenShift Infra cluster and manage the environment. (TODO: add link after merge)
+2. Provision the bastion server with the utilities and configuration required to install the OpenShift Infra cluster and manage the environment:
+```
+sudo ansible-playbook playbooks/bastion_setup.yaml
+```
 
 ## Hub Cluster Install
 
