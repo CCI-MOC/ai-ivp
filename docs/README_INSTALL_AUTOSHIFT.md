@@ -36,8 +36,7 @@ Using Helm, install OpenShift GitOps:
 
 ```console
 oc new-project helm-releases
-oc project helm-releases
-helm upgrade --install openshift-gitops openshift-gitops -f policies/stable/openshift-gitops/values.yaml
+helm upgrade --install -n helm-releases openshift-gitops openshift-gitops -f policies/stable/openshift-gitops/values.yaml
 ```
 
 > [!NOTE]
@@ -96,7 +95,7 @@ If this is not the case you may need to run `helm upgrade ...` command again.
 Using helm, install OpenShift Advanced Cluster Management on the hub cluster:
 
 ```console
-helm upgrade --install advanced-cluster-management advanced-cluster-management -f policies/stable/advanced-cluster-management/values.yaml
+helm upgrade --install -n helm-releases advanced-cluster-management advanced-cluster-management -f policies/stable/advanced-cluster-management/values.yaml
 ```
 
 Test if Red Hat Advanced Cluster Management has installed correctly, this may take some time:
