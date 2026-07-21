@@ -16,6 +16,8 @@ spec:
         - values/global.yaml
         - values/clustersets/hub.yaml
         - values/clustersets/managed.yaml
+        - values/clusters/staging.yaml
+        - values/clusters/production.yaml
       values: |-
         autoshiftGitRepo: https://github.com/CCI-MOC/ai-ivp
         autoshiftGitBranchTag: main
