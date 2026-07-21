@@ -16,19 +16,7 @@ All hub clusters **must** have the following configuration in their `hubClusterS
 * `gitops: 'true'` - OpenShift GitOps (ArgoCD) is required to deploy AutoShift
 * ACM is automatically installed on all hub clustersets by policy (no labels required)
 
-## Choose Your Installation Method
-
-| | **Source (Git)** | **OCI (Registry)** |
-|---|---|---|
-| **Best for** | Development, customization, getting started | Production, version-pinned deployments |
-| **Bootstrap from** | Local git clone | OCI artifacts from Quay |
-| **Git clone required** | Yes | No |
-| **Customizable policies** | Edit directly in repo | Fork or overlay |
-| **Air-gapped support** | Mirror git repo | Mirror OCI registry |
-
----
-
-## Installation from Source
+## Installation Steps
 
 ### Step 1: Login to the Hub Cluster
 
@@ -136,49 +124,13 @@ open-cluster-management   multiclusterhub   Running      6m28s   2.13.2         
 > [!TIP]
 > The previously installed OpenShift GitOps and ACM will be controlled by AutoShift after it is installed for version upgrading
 
-Update your values file with desired feature flags and repo url as defined in the [Autoshift Cluster Labels Values Reference](values-reference.md).
+Using helm and the values file for your cluster, install AutoShift. Values files for each infra cluster are versioned at [Autoshift Cluster Labels Values Reference](/autoshift/install/app-of-apps/).
 
-Using helm and the values you set for cluster labels, install AutoShift. Here is an example using the hub values file:
-
-```console
-export APP_NAME="autoshift"
-export REPO_URL="https://github.com/auto-shift/autoshiftv2.git"
-export TARGET_REVISION="main"
-export VALUES_FILE="values/global.yaml"
-export VALUES_FILE_2="values/clustersets/hub.yaml"
-export VALUES_FILE_3="values/clustersets/managed.yaml"
-export ARGO_PROJECT="default"
-export GITOPS_NAMESPACE="openshift-gitops"
-cat << EOF | oc apply -f -
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: $APP_NAME
-  namespace: $GITOPS_NAMESPACE
-spec:
-  destination:
-    namespace: $GITOPS_NAMESPACE
-    server: https://kubernetes.default.svc
-  source:
-    path: autoshift
-    repoURL: $REPO_URL
-    targetRevision: $TARGET_REVISION
-    helm:
-      valueFiles:
-        - $VALUES_FILE
-        - $VALUES_FILE_2
-        - $VALUES_FILE_3
-      values: |-
-        autoshiftGitRepo: $REPO_URL
-        autoshiftGitBranchTag: $TARGET_REVISION
-  sources: []
-  project: $ARGO_PROJECT
-  syncPolicy:
-    automated:
-      prune: false
-      selfHeal: true
-EOF
 ```
+oc apply -f autoshift/install/app-of-apps/infra.yaml
+```
+
+If you need to update your values file with different desired labels, see the [Autoshift Cluster Labels Values Reference](values-reference.md).
 
 ### Step 5: Assign Clusters to ClusterSets
 
@@ -213,170 +165,7 @@ oc get policies -A
 oc get policies -n open-cluster-policies
 ```
 
-That's it. Welcome to OpenShift Platform Plus and all of its many capabilities!
-
----
-
-## Installation from OCI Release
-
-For production or version-pinned deployments, AutoShift can be installed directly from OCI artifacts hosted on Quay — no git clone required.
-
-### Option A: Using the Install Scripts
-
-Download the scripts from the [latest release](https://github.com/auto-shift/autoshiftv2/releases) and run them:
-
-```bash
-curl -sL https://github.com/auto-shift/autoshiftv2/releases/latest/download/install-bootstrap.sh -O
-curl -sL https://github.com/auto-shift/autoshiftv2/releases/latest/download/install-autoshift.sh -O
-chmod +x install-*.sh
-
-# Bootstrap GitOps and ACM
-./install-bootstrap.sh
-
-# Wait for ACM to be ready
-oc get mch -A -w
-
-# Install AutoShift (accepts: hub, minimal, sbx, hubofhubs)
-./install-autoshift.sh hub
-```
-
-### Option B: Manual OCI Installation
-
-If you prefer to run the commands directly without the scripts:
-
-#### Step 1: Login to the Hub Cluster
-
-```console
-oc login --token=sha256~lQ...dI --server=https://api.cluster.example.com:6443
-```
-
-#### Step 2: Bootstrap GitOps from OCI
-
-```bash
-export OCI_REPO="oci://quay.io/autoshift"
-# export VERSION="X.Y.Z"   # Uncomment to pin to a specific version
-
-helm upgrade --install openshift-gitops ${OCI_REPO}/bootstrap/openshift-gitops \
-    ${VERSION:+--version ${VERSION}} \
-    --create-namespace \
-    --wait \
-    --timeout 10m
-```
-
-Verify GitOps is running:
-
-```console
-oc get pods -n openshift-gitops
-oc get argocd -A
-```
-
-#### Step 3: Bootstrap ACM from OCI
-
-```bash
-helm upgrade --install advanced-cluster-management ${OCI_REPO}/bootstrap/advanced-cluster-management \
-    ${VERSION:+--version ${VERSION}} \
-    --create-namespace \
-    --wait \
-    --timeout 15m
-```
-
-Wait for ACM to be ready:
-
-```console
-oc get mch -A -w
-```
-
-> [!NOTE]
-> This does take roughly 10 min to install. You can proceed to installing AutoShift while this is installing but you will not be able to verify AutoShift or select a `clusterset` until this is finished.
-
-#### Step 4: Deploy AutoShift from OCI
-
-Create the ArgoCD Application pointing to the OCI registry. The key difference from source mode is the OCI values (`autoshiftOciRegistry`, `autoshiftOciRepo`) which tell the ApplicationSet to pull policy charts from the registry instead of Git:
-
-```console
-export OCI_REGISTRY="quay.io/autoshift"
-# export VERSION="X.Y.Z"   # Uncomment to pin to a specific version
-cat << EOF | oc apply -f -
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: autoshift
-  namespace: openshift-gitops
-spec:
-  project: default
-  source:
-    repoURL: ${OCI_REGISTRY}
-    chart: autoshift
-    targetRevision: "${VERSION:-*}"
-    helm:
-      valueFiles:
-        - values/global.yaml
-        - values/clustersets/hub.yaml
-        - values/clustersets/managed.yaml
-      values: |
-        autoshiftOciRegistry: true
-        autoshiftOciRepo: oci://${OCI_REGISTRY}/policies
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: openshift-gitops
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-EOF
-```
-
-**Other composition examples:**
-
-```yaml
-# Minimal hub only:
-valueFiles:
-  - values/global.yaml
-  - values/clustersets/hub-minimal.yaml
-
-# Baremetal SNO + managed:
-valueFiles:
-  - values/global.yaml
-  - values/clustersets/hub-baremetal-sno.yaml
-  - values/clustersets/managed.yaml
-
-# Hub of hubs:
-valueFiles:
-  - values/global.yaml
-  - values/clustersets/hubofhubs.yaml
-  - values/clustersets/hub1.yaml
-  - values/clustersets/hub2.yaml
-```
-
-#### Step 5: Assign Clusters to ClusterSets
-
-```console
-# Replace 'hub' with the name of your clusterset
-oc label managedcluster local-cluster cluster.open-cluster-management.io/clusterset=hub --overwrite
-```
-
-For managed clusters, assign them to their clusterset the same way:
-
-```console
-oc label managedcluster <cluster-name> cluster.open-cluster-management.io/clusterset=managed --overwrite
-```
-
-#### Step 6: Verify
-
-```bash
-# Check ArgoCD Application
-oc get application autoshift -n openshift-gitops
-
-# Check individual policy Applications
-oc get applications -n openshift-gitops | grep autoshift
-
-# Check ACM policies
-oc get policies -A
-```
-
-For private registry credentials, custom CA certificates, and disconnected environments, see the [Release & OCI Guide](releases.md).
+That's it. Welcome to OpenShift!
 
 ---
 
