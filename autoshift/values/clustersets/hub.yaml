@@ -70,7 +70,7 @@ hubClusterSets:
       keycloak-source-namespace: openshift-marketplace
 
       ### Openshift Compliance Operator
-      compliance: 'true'
+      compliance: 'false'
       compliance-subscription-name: compliance-operator
       compliance-channel: stable
       compliance-source: redhat-operators
@@ -99,7 +99,7 @@ hubClusterSets:
       nmstate-source-namespace: openshift-marketplace
 
       ### OpenShift Logging
-      logging: 'true'
+      logging: 'false'
       logging-subscription-name: cluster-logging
       logging-version: 'cluster-logging.v6.5.1'
       logging-channel: stable-6.5
@@ -107,7 +107,7 @@ hubClusterSets:
       logging-source-namespace: openshift-marketplace
 
       ### OpenShift Data Foundation
-      odf: 'true'
+      odf: 'false'
       odf-channel: stable-4.21
       odf-multi-cloud-gateway: standalone
       odf-version: 'odf-operator.v4.21.9-rhodf'
@@ -116,7 +116,7 @@ hubClusterSets:
       odf-subscription-name: odf-operator
       
       ### Loki
-      loki: 'true'
+      loki: 'false'
       loki-channel: stable-6.5
       loki-lokistack-name: logging-lokistack
       loki-size: 1x.extra-small
@@ -127,7 +127,7 @@ hubClusterSets:
       loki-storageclass: pure-fb-nfsv4
 
       ### Cluster Observability Operator
-      coo: 'true'
+      coo: 'false'
       coo-subscription-name: cluster-observability-operator
       coo-version: 'cluster-observability-operator.v1.5.1'
       coo-channel: stable
