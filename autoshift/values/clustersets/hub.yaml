@@ -47,10 +47,11 @@ hubClusterSets:
       acm-source-namespace: openshift-marketplace
 
       ### Quay
-      quay: 'true'
+      quay: 'false'
       quay-subscription-name: quay-operator
       quay-channel:  stable-3.17
       quay-source: redhat-operators
+      quay-version: quay-operator.v3.17.2
       quay-source-namespace: openshift-marketplace
       
       ### Portworx
@@ -62,7 +63,7 @@ hubClusterSets:
       portworx-version: portworx-operator.v26.2.1
 
       ### Keycloak
-      keycloak: 'true'
+      keycloak: 'false'
       keycloak-subscription-name: rhsso-operator # keycloak-operator 
       keycloak-channel: stable
       keycloak-source: redhat-operators
