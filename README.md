@@ -98,6 +98,12 @@ See the [forked Autoshift documentation](/docs/README_AUTOSHIFT.md) for details.
 
 This repository includes code adapted from the [open source AutoshiftV2 project](https://github.com/auto-shift/autoshiftv2/).
 
+### L2 through L4 Network Diagram
+
+The diagram below shows the L2 VLANs, L3 routing, and L4 ports and protocols connecting the physical devices in the system.
+
+![L2 through L4 Network Diagram](/diagrams/L2-through-L4-diagram.png)
+
 # Installation
 
 ## Bastion Setup
