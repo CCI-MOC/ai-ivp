@@ -21,7 +21,7 @@ ssh myuser@<Bastion Server IP>
 Install Git, Ansible, and the required Ansible collections the bastion server:
 ```bash
 sudo dnf install -y git ansible-core
-sudo ansible-galaxy collection install ansible.posix
+sudo ansible-galaxy install -r playtbooks/requirements.yaml
 ```
 
 2. Clone this repository locally (One time setup per user that creates accounts)
@@ -30,53 +30,33 @@ git clone https://github.com/CCI-MOC/ai-ivp.git
 cd ai-ivp/
 ```
 
-3. Configure the Temporary Password
-We use Ansible Vault to encrypt the temporary password. You will be prompted to create a Vault Password-keep this safe, as you will need it to run the playbook.
-
-The first time you do this:
-
-```bash
-ansible-vault create playbooks/vars/secrets.yaml
-```
-
-Ansible will ask you for a vault password. Set this to something secure and remember it because you will need to use it to run the playbook.
-
-For subsequent users, the vault is already created, so you will use the `edit` subcommand instead of `create`.
-```bash
-ansible-vault edit playbooks/vars/secrets.yaml
-```
-
-Inside the vault editor that opens, paste:
-
-```yaml
-temp_sudo_password: "Choose_A_Strong_Temp_Password"
-```
-
-If there is a value present, change it to assign a different temporary password to the new user.
-
-4. Add Public Keys
+3. Add Users and Public Keys
  
-Create a file in the playbooks/admin_public_keys/ directory. The filename must match the requested username. Paste the new user's public key into the file. You can get the requested username and public key from the access request ticket.
+Create a file `playbooks/group_vars/all/bastion_users.yaml`. For each user, and an entry to the `bastion_users` key that contains their username, full name, and ssh key:
 
 ```bash
-mkdir -p playbooks/admin_public_keys/
-# Example for user 'jsmith'
-vi playbooks/admin_public_keys/jsmith.pub
-# Paste their public key, save and exit (:wq)
+cat > playbooks/group_vars/all/bastion_users.yaml <<EOF
+bastion_users:
+- username: alice
+  fullname: Alice User
+  ssh_key: "ssh-rsa ..."
+- username: bob
+  fullname: Bob Person
+  ssh_key: "ssh-rsa ..."
+EOF
 ```
 
 5. Run the Playbook
-Run the playbook for each user.
+
+This will create user accounts for all the listed users.
 
 ```bash
-sudo ansible-playbook playbooks/add-bastion-admin.yaml -e "username=<Target_Username>" --ask-vault-pass
+sudo ansible-playbook playbooks/add-bastion-admin.yaml
 ```
 
 6. Contact the new user
 
-You can get the user's preferred contact information from the access request ticket. Let the new know that their account has been created, how to connect, their temporary sudo password, and the next steps that they should take (i.e. testing the connection and changing their temporary password). The remaining steps document what they should do.
-
-**Note:** At this time, Slack and Email are not approved mediums to transmit temporary passwords for this environment. Giving them the password over the phone is allowed.
+You can get the user's preferred contact information from the access request ticket. Let the new know that their account has been created, how to connect, and the next steps that they should take (i.e. testing the connection and setting their password). The remaining steps document what they should do.
 
 6. Confirm Access
 
@@ -90,15 +70,19 @@ ssh <username>@<BASTION_IP>
 
 7. Have the user change their password
 
-Using their initial password, have the new admin set a new password. Do **not** prefix this command with `sudo`:
+The user will be prompted to set a password when they first log in. Once the password is set, they will be disconnected and will need to re-connect.
 
-```bash
-passwd
+```
+WARNING: Your password has expired.
+You must change your password now and login again!
+Changing password for user lars.
+New password:
+
 ```
 
 8. Have the user test sudo access
 
-This command should ask for their (new) password and then display their username:
+Have the user log back in and run a command with `sudo`. This command should ask for their (new) password and then display their username:
 
 ```bash
 sudo whoami
