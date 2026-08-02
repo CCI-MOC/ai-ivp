@@ -3,9 +3,9 @@
 ## Bastion
 
 | Purpose             | Hostname             | IP         | iDRAC IP | Hardware | Notes                                                                                                           | 
-| ------------------- | -------------------- | ---------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------- |
-| Bastion             | mocsec-r4pac06u37-1b | 10.11.0.20 | TBD      | FC430    |                                                                                                                 |
-| Alternative Bastion | mocsec-r4pac06u29-s3 | 10.11.0.20 | FC830    | FC830    | This is the machine at 10.11.0.30 that became an extra bastion server that had a desktop GUI already installed. | 
+| ------------------- | -------------------- | ---------- | ---------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| Bastion             | mocsec-r4pac06u37-1b | 10.11.0.20 | TBD        | FC430    |                                                                                                                 |
+| Alternative Bastion | mocsec-r4pac06u29-s3 | 10.11.0.30 | 10.6.1.152 | FC830    | This is the machine at 10.11.0.30 that became an extra bastion server that had a desktop GUI already installed. | 
 
 ## Infra
 
