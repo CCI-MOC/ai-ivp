@@ -22,3 +22,7 @@ release-artifacts/
 .tmp/*
 local/
 *.gz
+playbooks/infra/
+playbooks/infra_backup/
+playbooks/staging/
+playbooks/staging_backup/
