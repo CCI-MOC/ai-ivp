@@ -374,6 +374,10 @@ To fix this, reboot the node and press (TBD key) to enter the egrub menu. Then a
 
 ## Gathering Prerequisite Information
 
+### Re-verifying values before reinstalling an existing cluster
+
+If a cluster is already installed and you're about to wipe it for a reinstall, see [Verifying group_vars against a live cluster](README_VERIFY_GROUP_VARS.md) to confirm `playbooks/group_vars/<cluster_name>/vars.yml` still matches live state first -- once the nodes are wiped, you lose the ability to check.
+
 ### Gathering the storage device names for each node
 
 *NOTE: For existing environments, these are documented in [Environment Details](/docs/ENVIRONMENT.md)

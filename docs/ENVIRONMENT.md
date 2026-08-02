@@ -16,7 +16,7 @@
 
 **NOTE:** The storage device names are not guaranteed to be stable. We should switch to using serial numbers. The names are included here for convenience. Confirmed live via `lsblk`/`oc debug node` as of this writing (the previous values in this table were stale).
 
-**NOTE:** The full Ansible-consumable values for each cluster (MACs, IPs, storage devices, network config) live in `playbooks/group_vars/<cluster_name>/vars.yml` -- this table is a human-readable summary, not the source of truth for automation.
+**NOTE:** The full Ansible-consumable values for each cluster (MACs, IPs, storage devices, network config) live in `playbooks/group_vars/<cluster_name>/vars.yml` -- this table is a human-readable summary, not the source of truth for automation. Before wiping a cluster, see [Verifying group_vars against a live cluster](README_VERIFY_GROUP_VARS.md) to confirm those values against live state while you still can.
 
 ## Staging
 
