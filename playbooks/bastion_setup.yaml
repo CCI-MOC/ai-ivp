@@ -128,13 +128,9 @@
       changed_when: false
 
     - name: Verify racadm
-      shell: "/opt/dell/srvadmin/bin/idracadm7 -V"
-      register: racadm_version_output
+      command: /opt/dell/srvadmin/bin/idracadm7
+      register: racadm_check
       changed_when: false
-
-    - name: Display racadm Version
-      debug:
-        msg: "{{ racadm_version_output.stdout }}"
     
     - name: Verify httpd
       shell: "{{ sbin_dir }}/{{ item }}"
