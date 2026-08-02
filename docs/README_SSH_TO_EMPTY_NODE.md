@@ -79,3 +79,5 @@ lsblk # For storage device names
 ip addr show # For MAC addresses
 ```
 
+If you're here to wipe the boot disk before a reinstall, see [Storage Device Wipe](README_STORAGE_WIPE.md).
+
