@@ -1,0 +1,43 @@
+---
+cluster_name: infra
+base_domain: ocp.massopen.cloud
+
+master1_hostname: mocsec-r4pac06u33-3a
+master1_mac: a8:99:69:82:99:9b
+master1_ip: 10.11.0.21
+master1_install_drive: /dev/sda
+master1_etcd_drive: /dev/sdc
+
+master2_hostname: mocsec-r4pac06u35-3a
+master2_mac: 40:5c:fd:68:3f:1b
+master2_ip: 10.11.0.22
+master2_install_drive: /dev/sda
+# PLACEHOLDER: this node's second drive is not currently visible to the OS
+# (lsblk shows a 0B removable device where the other two masters show a real
+# 186.3G disk) -- confirmed hardware fault as of this writing, not yet fixed.
+# Fill in once the drive is reseated/replaced and shows up normally.
+master2_etcd_drive: PLACEHOLDER_FIX_HARDWARE_THEN_SET_DEVICE
+
+master3_hostname: mocsec-r4pac06u37-3a
+master3_mac: 10:7d:1a:9c:55:1b
+master3_ip: 10.11.0.23
+master3_install_drive: /dev/sda
+master3_etcd_drive: /dev/sdb
+
+# Confirmed via oc debug against the live master nodes (br-ex: 10.11.0.21/24).
+machine_network: 10.11.0.0/24
+
+# Not independently confirmed for Infra -- inferred from Staging's pattern
+# (gateway/dns = network's .1, rendezvous = master1_ip, shared NTP server,
+# standard OpenShift default internal CIDRs). Verify before relying on these.
+rendezvous_ip: 10.11.0.21
+gateway_ip: 10.11.0.1
+dns_ip: 10.11.0.1
+ntp: 129.10.5.1
+cluster_network: 10.128.0.0/14
+svc_network: 172.30.0.0/16
+
+# Sourced from the api/api-int/console entries formerly in README_INSTALL_HUB.md's
+# custom-hosts.txt example.
+api_ip: 10.11.0.24
+ingress_ip: 10.11.0.25

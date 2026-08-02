@@ -9,7 +9,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 1. The IP for the bastion server. See [Environment Details](/docs/ENVIRONMENT.md)
 2. SSH access to the bastion server.
 3. Bastion server must be provisioned following the instructions in [the main readme](/README.md). This will install required dependencies like the openshift installer binary.
-4. You need the storage device details and MAC addresses for each node. For existing environments, these should already be in the Ansible inventory files. You can also check [Environment Details](/docs/ENVIRONMENT.md). For new environments ask the person who installed the hardware, or use the instructions below under Gathering Prerequisite Information to gather the information yourself. 
+4. You need the storage device details and MAC addresses for each node. For existing environments, these are already in `playbooks/group_vars/<cluster_name>/vars.yml`. You can also check [Environment Details](/docs/ENVIRONMENT.md). For new environments ask the person who installed the hardware, or use the instructions below under Gathering Prerequisite Information to gather the information yourself. 
 5. Ability to clone the https://github.com/CCI-MOC/ai-ivp/ project on the bastion. This may require permissions in GitHub. 
 6. VNC access to the bastion, to get a desktop with a browser for the iDRAC virtual console. This is required because these iDRACs can't be managed with `racadm` from a FIPS-enabled bastion, so mounting the install ISO has to go through the iDRAC web GUI in a browser.
 
@@ -31,51 +31,25 @@ cd ai-ivp/
 
 3. Ansible configuration to generate an install ISO
 
-This process using the OpenShift Agent Based Installer method. You will generate an ISO to boot each server from, which will kick off the install.
+This process uses the OpenShift Agent Based Installer method. You will generate an ISO to boot each server from, which will kick off the install.
 
-- Update the main.yaml under <home_dir>/ai-ivp/playbooks/roles/create_agent_iso/vars to customize the agent-iso towards your cluster. 
-  This is a sample main.yaml that was used for Staging
-  ```
-	cluster_name: staging
-	base_domain: ocp.massopen.cloud
-	ocp_version: "4.21"
-	work_dir: "ocp_agent_install"
-	ntp: 129.10.5.1
-	master1_hostname: mocsec-r4pac06u33-3b
-	master1_mac: a8:99:69:82:9b:dd
-	master1_ip : 10.13.0.21
-	master1_install_drive: /dev/sda
-	master2_hostname: mocsec-r4pac06u35-3b
-	master2_mac: 40:5c:fd:68:41:5d
-	master2_ip : 10.13.0.22
-	master2_install_drive: /dev/sdb
-	master3_hostname: mocsec-r4pac06u37-3b
-	master3_mac: 10:7d:1a:9c:57:5d
-	master3_ip : 10.13.0.23
-	master3_install_drive: /dev/sda
-	rendezvous_ip: 10.13.0.21
-	gateway_ip: 10.13.0.1
-	dns_ip: 10.13.0.1
-	cluster_network: 10.128.0.0/14
-	machine_network: 10.13.0.0/16
-	svc_network: 172.30.0.0/16
-	api_ip: 10.13.0.24
-	ingress_ip: 10.13.0.25
-	pull_secret: <pull secret to download from Redhat Repo>
-	ssh_key: <use id_rsa_ocp.pub under /root/ssh on baston>
-  ```
-   
-- Update 98-master-var-lib-etcd.j2 to make sure the correct drives are hosting etcd for each node. Edit the line that looks like this, replacing the hosts and device names to match your environment:
-```
-            ExecStart=/bin/bash -c 'HOST=$(hostname); if [[ "$HOST" == *"u33-3b"* ]] || [[ "$HOST" == *"u35-3b"* ]]; then TARGET="/dev/sdc"; elif [[ "$HOST" == *"u37-3b"* ]]; then TARGET="/dev/sdb"; else exit 0; fi; sgdisk -Z $TARGET && sgdisk -n 1:0:0 -c 1:etcd $TARGET && partprobe $TARGET && udevadm settle && mkfs.xfs -f /dev/disk/by-partlabel/etcd'
-```
-In the above example, to switch from the staging to infra environment, you would replace `u35-3b` with `u35-3a`, and `u35-3b` with `u35-3b`, etc. And for each host you replace the device name that follows it with the device name for the etcd install that you identified in an earlier step (see the PREP section).
+Each cluster's values (hostnames, MACs, IPs, network config, storage devices) are tracked in an Ansible inventory under `playbooks/group_vars/<cluster_name>/vars.yml` — one file per cluster (currently `infra` and `staging`). You select which cluster to build for with `-e cluster_name=infra` or `-e cluster_name=staging` in the next step; there's no per-run vars file to hand-edit anymore.
 
-*TODO:* use template variables for these values with Ansible and put the values in an Ansible inventory file.
+- If this is your first time using a given cluster, or the pull secret/SSH key need updating, copy `playbooks/group_vars/<cluster_name>/secrets.yml.example` to `secrets.yml` (gitignored) in that same directory and fill in real values:
+  ```
+  cp playbooks/group_vars/<cluster_name>/secrets.yml.example playbooks/group_vars/<cluster_name>/secrets.yml
+  ```
+  ```yaml
+  pull_secret: <pull secret to download from Redhat Repo>
+  ssh_key: <use id_rsa_ocp.pub under /root/ssh on bastion>
+  ```
+- If a cluster's hardware changes (new hostnames/IPs/MACs/drives), edit `playbooks/group_vars/<cluster_name>/vars.yml` directly. It's a tracked file, so changes are versioned and don't need to be redone on every ISO build.
 
 4. Generate an OpenShift install ISO using Ansible
+
+`cluster_name` must match one of the clusters defined in `playbooks/inventory.yml` (currently `infra` or `staging`) — it selects which `group_vars` to build with.
   ```
-  ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=<cluser_name>"
+  ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=infra"
   ```
 - The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 

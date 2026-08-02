@@ -1,0 +1,10 @@
+all:
+  children:
+    infra:
+      hosts:
+        infra-cluster:
+          ansible_connection: local
+    staging:
+      hosts:
+        staging-cluster:
+          ansible_connection: local

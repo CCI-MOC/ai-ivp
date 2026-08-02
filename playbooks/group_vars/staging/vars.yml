@@ -1,0 +1,33 @@
+---
+cluster_name: staging
+base_domain: ocp.massopen.cloud
+
+master1_hostname: mocsec-r4pac06u33-3b
+master1_mac: a8:99:69:82:9b:dd
+master1_ip: 10.13.0.21
+master1_install_drive: /dev/sda
+master1_etcd_drive: /dev/sdc
+
+master2_hostname: mocsec-r4pac06u35-3b
+master2_mac: 40:5c:fd:68:41:5d
+master2_ip: 10.13.0.22
+master2_install_drive: /dev/sdb
+master2_etcd_drive: /dev/sdc
+
+master3_hostname: mocsec-r4pac06u37-3b
+master3_mac: 10:7d:1a:9c:57:5d
+master3_ip: 10.13.0.23
+master3_install_drive: /dev/sda
+master3_etcd_drive: /dev/sdb
+
+rendezvous_ip: 10.13.0.21
+gateway_ip: 10.13.0.1
+dns_ip: 10.13.0.1
+ntp: 129.10.5.1
+
+cluster_network: 10.128.0.0/14
+machine_network: 10.13.0.0/16
+svc_network: 172.30.0.0/16
+
+api_ip: 10.13.0.24
+ingress_ip: 10.13.0.25
