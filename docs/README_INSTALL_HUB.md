@@ -33,16 +33,18 @@ cd ai-ivp/
 
 This process uses the OpenShift Agent Based Installer method. You will generate an ISO to boot each server from, which will kick off the install.
 
-Each cluster's values (hostnames, MACs, IPs, network config, storage devices) are tracked in an Ansible inventory under `playbooks/group_vars/<cluster_name>/vars.yml` — one file per cluster (currently `infra` and `staging`). You select which cluster to build for with `-e cluster_name=infra` or `-e cluster_name=staging` in the next step; there's no per-run vars file to hand-edit anymore.
+Each cluster's values (hostnames, MACs, IPs, network config, storage devices, SSH public key) are tracked in an Ansible inventory under `playbooks/group_vars/<cluster_name>/vars.yml` — one file per cluster (currently `infra` and `staging`). You select which cluster to build for with `-e cluster_name=infra` or `-e cluster_name=staging` in the next step; there's no per-run vars file to hand-edit anymore.
 
-- If this is your first time using a given cluster, or the pull secret/SSH key need updating, copy `playbooks/group_vars/<cluster_name>/secrets.yml.example` to `secrets.yml` (gitignored) in that same directory and fill in real values:
+The one value that's actually sensitive is the Red Hat pull secret. It's kept out of git entirely (`ssh_public_key` is a *public* key, not sensitive, so it lives in the regular tracked `vars.yml` instead — only `pull_secret` needs this).
+
+- The first time you use a given cluster on this bastion, copy the schema template and fill in the real value:
   ```
-  cp playbooks/group_vars/<cluster_name>/secrets.yml.example playbooks/group_vars/<cluster_name>/secrets.yml
+  cp playbooks/group_vars/<cluster_name>/secrets.yaml.example playbooks/group_vars/<cluster_name>/secrets.yaml
   ```
   ```yaml
   pull_secret: <pull secret to download from Redhat Repo>
-  ssh_key: <use id_rsa_ocp.pub under /root/ssh on bastion>
   ```
+  `secrets.yaml` is gitignored — it's local to this bastion checkout and never committed.
 - If a cluster's hardware changes (new hostnames/IPs/MACs/drives), edit `playbooks/group_vars/<cluster_name>/vars.yml` directly. It's a tracked file, so changes are versioned and don't need to be redone on every ISO build.
 
 4. Generate an OpenShift install ISO using Ansible

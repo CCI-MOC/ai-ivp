@@ -41,3 +41,6 @@ svc_network: 172.30.0.0/16
 # custom-hosts.txt example.
 api_ip: 10.11.0.24
 ingress_ip: 10.11.0.25
+
+# Public key -- not sensitive, safe to track in plain YAML.
+ssh_public_key: <use id_rsa_ocp.pub under /root/ssh on bastion>

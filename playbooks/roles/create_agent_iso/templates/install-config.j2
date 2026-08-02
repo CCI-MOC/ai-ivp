@@ -19,7 +19,7 @@ fips: true
 metadata:
   name: {{ cluster_name }}
 pullSecret: '{{ pull_secret | tojson }}'
-sshKey: '{{ ssh_key }}'
+sshKey: '{{ ssh_public_key }}'
 platform:
   baremetal:
     apiVIPs:

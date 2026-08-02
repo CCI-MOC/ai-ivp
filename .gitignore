@@ -2,7 +2,7 @@
 *.swp
 admin_public_keys/
 vars/
-playbooks/group_vars/*/secrets.yml
+playbooks/group_vars/*/secrets.yaml
 *.swp
 .vscode
 *.swo
