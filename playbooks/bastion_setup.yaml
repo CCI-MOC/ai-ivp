@@ -11,6 +11,16 @@
     tmp_dir: "/tmp/ocp_install"
     sbin_dir: "/usr/sbin"
 
+    # Dell racadm (iDRAC remote management CLI)
+    idrac_tools_version: "11.4.1.0-1685"
+    idrac_tools_tarball: "Dell-iDRACTools-Web-LX-{{ idrac_tools_version }}_A00.tar.gz"
+    idrac_tools_url: "https://dl.dell.com/FOLDER14347901M/1/{{ idrac_tools_tarball }}"
+    idrac_rpm_dir: "{{ tmp_dir }}/iDRACTools/racadm/RHEL9/x86_64"
+    idrac_rpms:
+      - "srvadmin-argtable2-{{ idrac_tools_version }}.el9.x86_64.rpm"
+      - "srvadmin-hapi-{{ idrac_tools_version }}.el9.x86_64.rpm"
+      - "srvadmin-idracadm7-{{ idrac_tools_version }}.el9.x86_64.rpm"
+
   tasks:
     - name: Create temporary directory for downloads
       file:
@@ -87,6 +97,27 @@
             mode: '0755'
             remote_src: yes
 
+    - name: Install Dell racadm (iDRAC remote management CLI)
+      block:
+        - name: Download Dell iDRACTools package
+          get_url:
+            url: "{{ idrac_tools_url }}"
+            dest: "{{ tmp_dir }}/{{ idrac_tools_tarball }}"
+            mode: '0644'
+
+        - name: Extract racadm RHEL9 RPMs
+          unarchive:
+            src: "{{ tmp_dir }}/{{ idrac_tools_tarball }}"
+            dest: "{{ tmp_dir }}"
+            remote_src: yes
+            include: "{{ idrac_rpms | map('regex_replace', '^', 'iDRACTools/racadm/RHEL9/x86_64/') | list }}"
+
+        - name: Install racadm RPMs
+          dnf:
+            name: "{{ idrac_rpms | map('regex_replace', '^', idrac_rpm_dir + '/') | list }}"
+            disable_gpg_check: true  # Dell-signed (key 1285491434D8786F); key not in default RHEL9 keyring
+            state: present
+
     - name: Verify Installations
       shell: "{{ bin_dir }}/{{ item }}"
       loop:
@@ -95,6 +126,15 @@
         - "helm version --short"
       register: version_output
       changed_when: false
+
+    - name: Verify racadm
+      shell: "/opt/dell/srvadmin/bin/idracadm7 -V"
+      register: racadm_version_output
+      changed_when: false
+
+    - name: Display racadm Version
+      debug:
+        msg: "{{ racadm_version_output.stdout }}"
     
     - name: Verify httpd
       shell: "{{ sbin_dir }}/{{ item }}"
