@@ -23,18 +23,24 @@ master3_etcd_drive: /dev/sdb
 # Confirmed via oc debug against the live master nodes (br-ex: 10.11.0.21/24).
 machine_network: 10.11.0.0/24
 
-# Not independently confirmed for Infra -- inferred from Staging's pattern
-# (gateway/dns = network's .1, rendezvous = master1_ip, shared NTP server,
-# standard OpenShift default internal CIDRs). Verify before relying on these.
+# Design decision. Does not need verified in live environment.
 rendezvous_ip: 10.11.0.21
+
+# gateway_ip/dns_ip confirmed via `ip route show default` and /etc/resolv.conf
+# on the live master nodes. cluster_network/svc_network confirmed against the
+# live `oc get network.config cluster -o yaml`.
 gateway_ip: 10.11.0.1
 dns_ip: 10.11.0.1
-ntp: 129.10.5.1
 cluster_network: 10.128.0.0/14
 svc_network: 172.30.0.0/16
 
-# Sourced from the api/api-int/console entries formerly in README_INSTALL_HUB.md's
-# custom-hosts.txt example.
+# NOT WORKING: `chronyc sources` on the live cluster shows this
+# marked ^x (falseticker, ~2931ms offset) -- it's not actually being used for
+# sync. The cluster is really getting time from public pool servers instead.
+# Left as-is until we can fix the NTP server or decide to drop it.
+ntp: 129.10.5.1
+
+# Confirmed to match DNS records via dig from bastion
 api_ip: 10.11.0.24
 ingress_ip: 10.11.0.25
 
