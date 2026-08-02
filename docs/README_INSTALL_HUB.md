@@ -11,7 +11,7 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 3. Bastion server must be provisioned following the instructions in [the main readme](/README.md). This will install required dependencies like the openshift installer binary.
 4. You need the storage device details and MAC addresses for each node. For existing environments, these should already be in the Ansible inventory files. You can also check [Environment Details](/docs/ENVIRONMENT.md). For new environments ask the person who installed the hardware, or use the instructions below under Gathering Prerequisite Information to gather the information yourself. 
 5. Ability to clone the https://github.com/CCI-MOC/ai-ivp/ project on the bastion. This may require permissions in GitHub. 
-6. An account on the GUI-capable bastion, and the ability to scp between it and the primary bastion. See [Environment Details](/docs/ENVIRONMENT.md) for which bastion has the GUI desktop. If you don't have an account there yet, follow [docs/README_BASTION_ADMINS.md](/docs/README_BASTION_ADMINS.md). This is required because these iDRACs can't be managed with `racadm` from a FIPS-enabled bastion (see [Known Issues](/docs/RECOMMENDATIONS.md)), so mounting the install ISO has to go through the iDRAC web GUI in a browser.
+6. VNC access to the bastion, to get a desktop with a browser for the iDRAC virtual console. This is required because these iDRACs can't be managed with `racadm` from a FIPS-enabled bastion, so mounting the install ISO has to go through the iDRAC web GUI in a browser.
 
 ## Instructions
 
@@ -128,28 +128,41 @@ In the above example, to switch from the staging to infra environment, you would
   ```
 - The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 
-7. Copy the ISO file to the GUI bastion
+7. Open an iDRAC session for each node you want to install on
 
-- scp the generated ISO from the primary bastion to your home directory on the GUI-capable bastion (see [Environment Details](/docs/ENVIRONMENT.md) for its IP). Example:
-  ```
-  scp <cluster_name>/agent.x86_64.iso youruser@<gui_bastion_ip>:~/
-  ```
+VNC into the bastion to get a desktop with a browser.
 
-8. Open an iDRAC session for each node you want to install on
+Open the iDRAC web console for each server you will install OpenShift on. Get the iDRAC IPs from [Environment Details](/docs/ENVIRONMENT.md).
 
-This requires a browser, so it must be done from the GUI bastion. Log into its desktop and open the iDRAC virtual console for each node exactly as described in steps 1-3 of [Booting from a RHEL ISO to investigate an OpenShift node](/docs/README_SSH_TO_EMPTY_NODE.md), using the iDRAC IPs for your target nodes from [Environment Details](/docs/ENVIRONMENT.md).
+- Open Chrome (click the red fedora icon to the top left of the desktop and type 'Chrome', then select the option).
+- WARNING: Do *NOT* use Firefox. It will complain about TLS related issues with no easy way to accept the risk and continue.
+- In Chrome, use tabs to open the iDRAC web console for each server you will install OpenShift on. Just enter the IP address into the browser bar.
+- When it complains about TLS, go to Advanced -> Accept.
+- Enter your iDRAC username and password. The person who installed the servers for you may have helped you set this up. For a prototype environment it may be the default iDRAC username and password, which are root/calvin.
 
-9. Attach the ISO
+Then, in each browser tab, open the virtual console:
+
+- Select "Launch" on the right side of the screen, under "Virtual Console Preview".
+- The first time you do this for each node, you will be prompted about popups being blocked. Do this:
+  - Click the popup icon in the top right of the window
+  - Change the radio button for "Always allow popups..."
+  - Select "Done"
+  - Close the popup window
+  - Select "Launch" again
+- Another popup about SSL may display briefly. Wait and it will disappear.
+- Another orange screen may appear briefly. Wait and it will disappear.
+
+8. Attach the ISO
 
 - *IMPORTANT: DO NOT CLOSE THE BROWSER UNTIL CoreOS IS INSTALLED!!* Closing the window before that (which takes a long time), will cause the install to fail. If this happens, reboot the server, which will restart the long-running install process.
 - Select "Connect Virtual Media"
 - Under "Map CD/DVD", select "Choose File"
-- Select the installation .iso file. This is the file you scp'd to the GUI bastion in the previous step; it should be in your home directory.
+- Select the installation .iso file. It's the one you just generated, at `<cluster_name>/agent.x86_64.iso` in your home directory on the bastion.
 - Select "Map Device"
 - Confirm the bar at the top of the virtual console says "Virtual Media is connected", and "Devices Mapped: 1" and lists the name of your .iso file.
 - Close the Virtual Media popup.
 
-10. Reboot the server to begin the install
+9. Reboot the server to begin the install
 
 - From the iDRAC console for the node, power cycle the server.
 - Switch back to the Virtual Console popup.
@@ -162,7 +175,7 @@ This requires a browser, so it must be done from the GUI bastion. Log into its d
 - Select "Virtual Optical Drive"
 - Confirm the selection
 
-11. Monitor the install from the bastion
+10. Monitor the install from the bastion
 
 - From the staging directory that holds the recently created agent_iso you can follow the install by running
   ```
@@ -174,7 +187,7 @@ This requires a browser, so it must be done from the GUI bastion. Log into its d
   ```
   Once the bootstrap is complete, run this command. It will wait until all cluster operators are available, the worker nodes have joined, and the cluster is fully operational.
 
-12. Troubleshooting
+11. Troubleshooting
 
 *NOTE:* The install will appear to sit idle at various points, including one point where it displays a login prompt which will go away on its own. Be patient. If it looks like it is not progressing, wait at least 30 minutes before assuming it is broken.
 
