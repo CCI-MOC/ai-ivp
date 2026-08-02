@@ -11,7 +11,7 @@
 | Purpose             | Hostname             | IP         | iDRAC IP   | Hardware | Notes | 
 | ------------------- | -------------------- | ---------- | ---------- | -------- | ----- |
 | Control / Worker    | mocsec-r4pac06u33-3a | 10.11.0.21 | 10.6.1.175 | FC430    | Storage device names: sda (boot), sdc (etcd) |
-| Control / Worker    | mocsec-r4pac06u35-3a | 10.11.0.22 | 10.6.1.185 | FC430    | Storage device names: sda (boot). Second drive not currently visible to the OS -- hardware fault, needs reseating/replacement. |
+| Control / Worker    | mocsec-r4pac06u35-3a | 10.11.0.22 | 10.6.1.185 | FC430    | Storage device names: sda (boot), sdb (etcd) |
 | Control / Worker    | mocsec-r4pac06u37-3a | 10.11.0.23 | 10.6.1.195 | FC430    | Storage device names: sda (boot), sdb (etcd) |
 
 **NOTE:** The storage device names are not guaranteed to be stable. We should switch to using serial numbers. The names are included here for convenience. Confirmed live via `lsblk`/`oc debug node` as of this writing (the previous values in this table were stale).
