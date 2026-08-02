@@ -35,7 +35,7 @@ This process uses the OpenShift Agent Based Installer method. You will generate 
 
 Each cluster's values (hostnames, MACs, IPs, network config, storage devices, SSH public key) are tracked in an Ansible inventory under `playbooks/group_vars/<cluster_name>/vars.yml` — one file per cluster (currently `infra` and `staging`). You select which cluster to build for with `-e cluster_name=infra` or `-e cluster_name=staging` in the next step; there's no per-run vars file to hand-edit anymore.
 
-The one value that's actually sensitive is the Red Hat pull secret. It's kept out of git entirely (`ssh_public_key` is a *public* key, not sensitive, so it lives in the regular tracked `vars.yml` instead — only `pull_secret` needs this).
+The one value that's actually sensitive is the Red Hat pull secret. It's kept out of git entirely.
 
 - The first time you use a given cluster on this bastion, copy the schema template and fill in the real value:
   ```
