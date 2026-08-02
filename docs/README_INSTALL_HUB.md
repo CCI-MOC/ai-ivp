@@ -9,52 +9,65 @@ https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 1. The IP for the bastion server. See [Environment Details](/docs/ENVIRONMENT.md)
 2. SSH access to the bastion server.
 3. Bastion server must be provisioned following the instructions in [the main readme](/README.md). This will install required dependencies like the openshift installer binary.
-4. You need the storage device details and MAC addresses for each node. For existing environments, these should already be in the Ansible inventory files. You can also check [Environment Details](/docs/ENVIRONMENT.md). For new environments, ask the person who installed the hardware or use the instructions at the end of this document. 
+4. You need the storage device details and MAC addresses for each node. For existing environments, these should already be in the Ansible inventory files. You can also check [Environment Details](/docs/ENVIRONMENT.md). For new environments ask the person who installed the hardware, or use the instructions below under Gathering Prerequisite Information to gather the information yourself. 
+5. Ability to clone the https://github.com/CCI-MOC/ai-ivp/ project on the bastion. This may require permissions in GitHub. 
 
 ## Instructions
 
-2. Create custom-hosts.txt
+1. SSH into the bastion server
+```
+ssh your_user@bastion_ip
+```
 
-Do this on the bastion.
+Perform all of the following instructions on the bastion server unless the instructions say otherwise.
 
-- Create a custom-hosts.txt.
+2. Clone the https://github.com/CCI-MOC/ai-ivp/ project into your home directory.
+```
+cd ~
+git clone https://github.com/CCI-MOC/ai-ivp/
+cd ai-ivp/
+```
+
+3. Create custom-hosts.txt
+
+Create a custom-hosts.txt.
 
 See https://access.redhat.com/support/cases/#/case/04442017 for more information.
 
-  The custom-hosts.txt follows the following format in Plaintext
-  ```
-  127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-  ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+The custom-hosts.txt follows the following format in Plaintext
+```
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
-  # Rendezvous / API VIPs
-  <API_VIP_IP>      api.<clustername>.<basedomain>
-  <API_INT_VIP_IP>  api-int.<clustername>.<basedomain>
+# Rendezvous / API VIPs
+<API_VIP_IP>      api.<clustername>.<basedomain>
+<API_INT_VIP_IP>  api-int.<clustername>.<basedomain>
 
-  # OpenShift Nodes
-  <Node1_IP>        <node1_lowercase_hostname>
-  <Node2_IP>        <node2_lowercase_hostname>
-  <Node3_IP>        <node3_lowercase_hostname>
-  ```
-  Base64 Encode the File
-  The MachineConfig object requires the file contents to be base64 encoded as a data URI. Run the following command in your terminal to get the encoded string:
+# OpenShift Nodes
+<Node1_IP>        <node1_lowercase_hostname>
+<Node2_IP>        <node2_lowercase_hostname>
+<Node3_IP>        <node3_lowercase_hostname>
+```
+Base64 Encode the File
+The MachineConfig object requires the file contents to be base64 encoded as a data URI. Run the following command in your terminal to get the encoded string:
 
-  For example, this was the custom-hosts.txt for infra
+For example, this was the custom-hosts.txt for the Infra environment
 
-  ```
-  127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-  ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+```
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
-  # Rendezvous / API VIPs
-  10.11.0.24      api.infra.ocp.massopen.cloud api-int.infra.ocp.massopen.cloud
-  10.11.0.25      console-openshift-console.apps.infra.ocp.massopen.cloud
+# Rendezvous / API VIPs
+10.11.0.24      api.infra.ocp.massopen.cloud api-int.infra.ocp.massopen.cloud
+10.11.0.25      console-openshift-console.apps.infra.ocp.massopen.cloud
 
-  # OpenShift Nodes
-  10.11.0.21      mocsec-r4pac06u33-3a
-  10.11.0.22      mocsec-r4pac06u35-3a
-  10.11.0.23      mocsec-r4pac06u37-3a
-  ```
+# OpenShift Nodes
+10.11.0.21      mocsec-r4pac06u33-3a
+10.11.0.22      mocsec-r4pac06u35-3a
+10.11.0.23      mocsec-r4pac06u37-3a
+```
 
-3. Get the base64 encoded version of custom-hosts.txt && echo
+4. Get the base64 encoded version of custom-hosts.txt && echo
 
   Bash
   ```
@@ -63,13 +76,10 @@ See https://access.redhat.com/support/cases/#/case/04442017 for more information
 
   You will use this in the next step as the value for `hosts_custom`.
 
-11. Ansible configuration to generate an install ISO
+5. Ansible configuration to generate an install ISO
 
 This process using the OpenShift Agent Based Installer method. You will generate an ISO to boot each server from, which will kick off the install.
 
-
-
-- Clone the https://github.com/CCI-MOC/ai-ivp/ project. 
 - Update the main.yaml under <home_dir>/ai-ivp/playbooks/roles/create_agent_iso/vars to customize the agent-iso towards your cluster. 
   This is a sample main.yaml that was used for Staging
   ```
@@ -111,15 +121,15 @@ In the above example, to switch from the staging to infra environment, you would
 
 *TODO:* use template variables for these values with Ansible and put the values in an Ansible inventory file.
 
-5. Generate an OpenShift install ISO using Ansible
+6. Generate an OpenShift install ISO using Ansible
   ```
   ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=<cluser_name>"
   ```
 - The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 
-6. Open an iDRAC session for each node you want to install on
+7. Open an iDRAC session for each node you want to install on
 
-13. Attach the ISO
+8. Attach the ISO
 
 - *IMPORTANT: DO NOT CLOSE THE BROWSER UNTIL CoreOS IS INSTALLED!!* Closing the window before that (which takes a long time), will cause the install to fail. If this happens, reboot the server, which will restart the long-running install process.
 - Select "Connect Virtual Media"
@@ -129,7 +139,7 @@ In the above example, to switch from the staging to infra environment, you would
 - Confirm the bar at the top of the virtual console says "Virtual Media is connected", and "Devices Mapped: 1" and lists the name of your .iso file.
 - Close the Virtual Media popup.
 
-14. Reboot the server to begin the install
+9. Reboot the server to begin the install
 
 - From the iDRAC console for the node, power cycle the server.
 - Switch back to the Virtual Console popup.
@@ -142,9 +152,7 @@ In the above example, to switch from the staging to infra environment, you would
 - Select "Virtual Optical Drive"
 - Confirm the selection
 
-15. Monitor the install from the bastion
-
-- SSH into the .20 bastion.
+10. Monitor the install from the bastion
 
 - From the staging directory that holds the recently created agent_iso you can follow the install by running
   ```
@@ -156,9 +164,11 @@ In the above example, to switch from the staging to infra environment, you would
   ```
   Once the bootstrap is complete, run this command. It will wait until all cluster operators are available, the worker nodes have joined, and the cluster is fully operational.
 
-16. Troubleshoot install problems
+11. Troubleshooting
 
 *NOTE:* The install will appear to sit idle at various points, including one point where it displays a login prompt which will go away on its own. Be patient. If it looks like it is not progressing, wait at least 30 minutes before assuming it is broken.
+
+**NOTE:** The Common Installation Errors section below lists the symptoms and resolutions of commonly encountered issues.
 
 Once the install has progressed to the point that there is an OS running on the node and it is running an SSH daemon, you can ssh in to troubleshoot.
 
@@ -166,9 +176,9 @@ Use the private key that correspons to the public key that you provided when you
 
 Use the IP of the node that you provided in the installer file. Do not use the iDRAC IP.
 
-  ```
-  ssh -i /root/ssh/id_rsa_ocp core@<node IP>
-  ```
+```
+ssh -i /root/ssh/id_rsa_ocp core@<node IP>
+```
 
 ### Post-Openshift Install Setup
 
@@ -395,9 +405,9 @@ For example, to give a user Cluster-Admin access, run:
 oc adm policy add-cluster-role-to-user cluster-admin <your-github-username>
 ```
  
-## TROUBLESHOOTING
+## Common Installation Errors
 
-* If the installation hangs and the terminal for one of the nodes being installed displays:
+* If the installation hangs, wait and the terminal for one of the nodes being installed displays:
 ```
 INFO <hostname> updated status from preparing-for-installation to preparing-successful (Host finished successfully to prepare for installation)
 ```
