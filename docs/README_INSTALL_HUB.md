@@ -4,131 +4,18 @@
 * See this link for background information on what the Agent-Iso is and how it works
 https://www.redhat.com/en/blog/meet-the-new-agent-based-openshift-installer-1
 
+## Prerequisites
+
+1. The IP for the bastion server. See [Environment Details](/docs/ENVIRONMENT.md)
+2. SSH access to the bastion server.
+3. Bastion server must be provisioned following the instructions in [the main readme](/README.md). This will install required dependencies like the openshift installer binary.
+4. You need the storage device details and MAC addresses for each node. For existing environments, these should already be in the Ansible inventory files. You can also check [Environment Details](/docs/ENVIRONMENT.md). For new environments, ask the person who installed the hardware or use the instructions at the end of this document. 
+
 ## Instructions
 
-### Install OpenShift
+2. Create custom-hosts.txt
 
-1. Make sure you can Login to bastion ( 10.11.0.30 ) using idrac 10.6.1.152. This is so you have access to a GUI and browser. Also make sure you have the ability to scp beteen .20 and .30
-
-2. Verify installer binaries
-- Make sure `openshift-install-fips` and `butane` are in the /usr/local/bin directory.
-
-3. Create a user account on the GUI bastion
-
-*TODO:* We should only need one bastion server. We ran into an issue where we needed the GUI desktop to have a browser to mount ISOs (see below). The fastest way to get this was to use a separate server to install an instance of RHEL that has a GUI. In the future we can do the steps below on the same bastion server. We tried at length to mount the ISO in a way that did not require a browser, without success (tried NFS and HTTP mounts). One of these was not supported, the other did not work. We suspect that there is a bug or incompatibility in idrac preventing us from using the other.
-
-- Generate a ssh keypair on .20. `ssh-keygen` and follow the instructions. *Set a passphrase because others will have access to the private key file!*
-- An existing administrator on .30 will must to create a user for you on the GUI bastion.30, following the instructions in docs/README_BASTION_ADMINS.md. You will have to provide them with the public key you generated on .20. By default it is at ~/.ssh/id_rsa.pub.
-- They will ask you to ssh into the new bastion at `ssh 10.11.0.30`. Run ssh from .20 to connect to .30.
-
-4. Log into the desktop gui of the GUI bastion
-
-- Using a browser on your desktop, iog into the .30 bastion's iDRAC at 10.6.1.152.
-- In the iDRAC interface, go to Server (left navigation menu) -> Launch (right side, under Virtual Console Preview).
-- The virtual console window may prompt you to allow pop-ups. Approve, close the window, and try again.
-- You may see a screen that says "No Signal". If so, use the Refresh button at the top of the pop-up window.
-- You will see a login screen for a RHELdesktop. Log using your .30 user password (set when your ran `passwd` on .30).
-
-5.  Connect to the iDRAC web console for the new OpenShift nodes
-
-Run these instructions using the gui desktop of the .30 bastion.
-
-Open the iDRAC web console for each server you will install OpenShift on.
-
-- Open Chrome (click the red fedora icon to the top left of the desktop and type 'Chrome', then select the option.
-- WARNING: Do *NOT* use Firefox. It will complain about TLS related issues with no easy way to accept the risk and continue.
-- In Chrome, use tabs to open the iDRAC web console for each server you will install OpenShift on. Just enter the IP address into the browser bar.
-- When it complains about TLS, go to Advanced -> Accept.
-- Enter your iDRAC username and password. The person who installed the servers for you may have helped you set this up. For a prototype environment it may be the default iDRAC username password, which are root/calvin.
-
-The IPs for the existing iDRACs are:
-  ```
-  Infra:
-  10.6.1.175
-  10.6.1.185
-  10.6.1.195
-
-  Staging:
-  10.6.1.176
-  10.6.1.186
-  10.6.1.196
-  ```
-
-6. Open the vitual console for each new OpenShift node
-
-In the browser tab with the iDRAC interface for each node:
-
-- Select "Launch" on the right side of the screen, under "Virtual Console Preview".
-- The first time you do this for each node, you will be prompted about popups being blocked. Do this:
-  - Click the popup icon in the top right of the window
-  - Change the radio button for "Always allow popups..."
-  - Select "Done"
-  - Close the popup window 
-  - Select  "Launch" again
-- Another popup about SSL may display briefly. Wait and it will disappear.
-- Another orange screen may appear briefly. Wait and it will disappear.
-
-7. Get a shell prompt for each node
-
-*NOTE: If you are doing a reinstall and already have CoreOS installed on the nodes, you can ssh in as the core user. `ssh -i <path to private key from install> core@<node IP>. Otherwise follow the remaining instructions in this step.
-
-You can use the RHEL 9 boot ISO to get a shell on a machine that does not have an operating system.
-
-From the .30 desktop, download the RHEL 9 boot ISO. At the time of writing, it has already been downloaded to `/home/install/rhel-9.8-x86_64-boot.iso`.
-
-In the Virtual Console for each node:
-
-- Select "Connect Virtual Media"
-- Under "Map CD/DVD", select "Choose File"
-- Select the RHEL 9 boot .iso file.
-- Select "Map Device"
-- Confirm the bar at the top of the virtual console says "Virtual Media is connected", and "Devices Mapped: 1" and lists the name of your .iso file.
-- Close the Virtual Media popup.
-- From the iDRAC console for the node, power cycle the server.
-- Switch back to the Virtual Console popup.
-- Watch the top of the screen as the machine boots. There is a progress bar at the bottom, and a Dell symbol to the top left.
-- Press the "Keyboard" button at the top of the window to bring up a virtual keyboard. Use this instead of your physical keyboard for the steps. You have to quickly press keys, and the input from your physical keyboard can sometimes be delayed in this interface.
-- When the bar is approximately one third full, some text will appear to the right of the Dell symbol. As soon as that text appears option appears, quickly press `F11`.
-- Close the virtual keyboard popup.
-- You will see the text change to "Entering Boot Manager" with blue highlighting. Wait a minute.
-- Select "One-shot UEFI Boot Menu"
-- Select "Virtual Optical Drive"
-- "Troubleshooting..."
-- "Rescue a Red Hat Enterprise Linux..."
-- Wait a few minutes
-- When the menu appears, press 3 to skip to shell
-- Press ENTER to continue
-
-You should see a shell prompt.
-
-8. Gather the storage device names for each node
-
-From a shell on each OpenShift node, run:
-
-```
-lsblk 
-```
-
-Look at the size column. Two devices will have a size of 186.3G. Make note of their device names, which should be something like `sda` or `sdb`
-We will use one device as the OpenShift boot drive, and the other will be dedicated as storage for this cluster's etcd.
-
-Choose one device for each purpose and take note of the two device names and their purposes for each node.
-
-At the time of writing, the known device names are:
-
-```
-Infra:
-.21 - sda, sdb
-.22 - sdb, sdc
-.23 - sdb, sdc
-
-Staging:
-*TODO:* ssh in and check before the reinstall
-```
-
-9. Create custom-hosts.txt
-
-Do this on the .20 bastion
+Do this on the bastion.
 
 - Create a custom-hosts.txt.
 
@@ -167,7 +54,7 @@ See https://access.redhat.com/support/cases/#/case/04442017 for more information
   10.11.0.23      mocsec-r4pac06u37-3a
   ```
 
-10. Get the base64 encoded version of custom-hosts.txt && echo
+3. Get the base64 encoded version of custom-hosts.txt && echo
 
   Bash
   ```
@@ -176,9 +63,13 @@ See https://access.redhat.com/support/cases/#/case/04442017 for more information
 
   You will use this in the next step as the value for `hosts_custom`.
 
-11. ISO GENERATION
+11. Ansible configuration to generate an install ISO
 
-- Checkout out the https://github.com/CCI-MOC/ai-ivp/ project. 
+This process using the OpenShift Agent Based Installer method. You will generate an ISO to boot each server from, which will kick off the install.
+
+
+
+- Clone the https://github.com/CCI-MOC/ai-ivp/ project. 
 - Update the main.yaml under <home_dir>/ai-ivp/playbooks/roles/create_agent_iso/vars to customize the agent-iso towards your cluster. 
   This is a sample main.yaml that was used for Staging
   ```
@@ -220,18 +111,13 @@ In the above example, to switch from the staging to infra environment, you would
 
 *TODO:* use template variables for these values with Ansible and put the values in an Ansible inventory file.
 
-- To create the ISO run 
+5. Generate an OpenShift install ISO using Ansible
   ```
   ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=<cluser_name>"
   ```
 - The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 
-12. Copy the .ISO file from .20 to .30
-
-*TODO:* remove this step when we reinstall the main bastion server to have a gui desktop (or eliminate the need to mount ISOs this way).
-
-- On .20, run the scp command to copy the ISO to the .30 bastion. Put the file in your home directory on .30. Example: `scp -i ssh/id_rsa agent.x86_64.iso dbrletic@10.11.0.30:/home/dbrletic/agent.x86_64.iso`. 
-
+6. Open an iDRAC session for each node you want to install on
 
 13. Attach the ISO
 
@@ -525,3 +411,25 @@ level=error msg=failed to fetch Master Machines: failed to load asset \"Install 
 It was created using openshift-install-fips AND on a system with FIPS enabled.
 ```
 To fix this, reboot the node and press (TBD key) to enter the egrub menu. Then append ` fips=1` to the line that starts with the `linux` command. This should be the second line deisplayed. It is a long line with multiple options. Then continue the boot.
+
+## Gathering Prerequisite Information
+
+### Gathering the storage device names for each node
+
+*NOTE: For existing environments, these are documented in [Environment Details](/docs/ENVIRONMENT.md)
+
+*TODO:* We should switch from device names to serial numbers because device names are not stable.
+
+From a shell on each OpenShift node, run:
+
+```
+lsblk 
+```
+
+Look at the size column. Two devices will have a size of 186.3G. Make note of their device names, which should be something like `sda` or `sdb`
+We will use one device as the OpenShift boot drive, and the other will be dedicated as storage for this cluster's etcd.
+
+Choose one device for each purpose and take note of the two device names and their purposes for each node.
+
+Then update the Ansible inventory files for your environment with the host names.
+
