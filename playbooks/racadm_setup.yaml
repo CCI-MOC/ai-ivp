@@ -1,0 +1,71 @@
+---
+# Installs Dell's racadm/idracadm7 CLI for remote iDRAC management.
+#
+# KNOWN LIMITATION: racadm from this playbook cannot manage the FC430/FC830
+# iDRACs when run from a FIPS-enabled bastion (crypto-policy FIPS or kernel
+# FIPS mode). RHEL9's FIPS-enforced crypto policy requires TLS sessions to
+# negotiate an Extended Master Secret (RFC 7627); the FC430/FC830's iDRAC7/8
+# TLS stack doesn't support EMS, and there's no firmware for that generation
+# that adds it. OpenSSL aborts the handshake client-side before the iDRAC
+# ever responds, so this fails regardless of racadm/Ansible configuration.
+# Newer iDRAC generations with EMS-capable firmware are unaffected.
+
+- name: Install Dell racadm (iDRAC remote management CLI)
+  hosts: localhost
+  connection: local
+  become: yes
+  vars:
+    tmp_dir: "/tmp/racadm_install"
+    idrac_tools_version: "11.4.1.0-1685"
+    idrac_tools_tarball: "Dell-iDRACTools-Web-LX-{{ idrac_tools_version }}_A00.tar.gz"
+    idrac_tools_url: "https://dl.dell.com/FOLDER14347901M/1/{{ idrac_tools_tarball }}"
+    idrac_rpm_dir: "{{ tmp_dir }}/iDRACTools/racadm/RHEL9/x86_64"
+    idrac_rpms:
+      - "srvadmin-argtable2-{{ idrac_tools_version }}.el9.x86_64.rpm"
+      - "srvadmin-hapi-{{ idrac_tools_version }}.el9.x86_64.rpm"
+      - "srvadmin-idracadm7-{{ idrac_tools_version }}.el9.x86_64.rpm"
+
+  tasks:
+    - name: Create temporary directory for downloads
+      file:
+        path: "{{ tmp_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download Dell iDRACTools package
+      get_url:
+        url: "{{ idrac_tools_url }}"
+        dest: "{{ tmp_dir }}/{{ idrac_tools_tarball }}"
+        mode: '0644'
+
+    - name: Extract racadm RHEL9 RPMs
+      unarchive:
+        src: "{{ tmp_dir }}/{{ idrac_tools_tarball }}"
+        dest: "{{ tmp_dir }}"
+        remote_src: yes
+        include: "{{ idrac_rpms | map('regex_replace', '^', 'iDRACTools/racadm/RHEL9/x86_64/') | list }}"
+
+    - name: Install racadm RPMs
+      dnf:
+        name: "{{ idrac_rpms | map('regex_replace', '^', idrac_rpm_dir + '/') | list }}"
+        disable_gpg_check: true  # Dell-signed (key 1285491434D8786F); key not in default RHEL9 keyring
+        state: present
+
+    - name: Symlink unversioned libssl.so for racadm
+      # idracadm7 dlopen()s the unversioned "libssl.so"; RHEL9's openssl-libs
+      # only ships the versioned libssl.so.3 (unversioned symlink is normally
+      # only provided by openssl-devel, which we don't want on this host).
+      file:
+        src: /usr/lib64/libssl.so.3
+        dest: /usr/lib64/libssl.so
+        state: link
+
+    - name: Verify racadm
+      command: /opt/dell/srvadmin/bin/idracadm7
+      register: racadm_check
+      changed_when: false
+
+    - name: Cleanup temporary files
+      file:
+        path: "{{ tmp_dir }}"
+        state: absent
