@@ -1,0 +1,11 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# Rendezvous / API VIPs
+{{ api_ip }}      api.{{ cluster_name }}.{{ base_domain }} api-int.{{ cluster_name }}.{{ base_domain }}
+{{ ingress_ip }}      console-openshift-console.apps.{{ cluster_name }}.{{ base_domain }}
+
+# OpenShift Nodes
+{{ master1_ip }}        {{ master1_hostname }}
+{{ master2_ip }}        {{ master2_hostname }}
+{{ master3_ip }}        {{ master3_hostname }}

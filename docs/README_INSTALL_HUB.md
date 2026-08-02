@@ -29,55 +29,7 @@ git clone https://github.com/CCI-MOC/ai-ivp/
 cd ai-ivp/
 ```
 
-3. Create custom-hosts.txt
-
-Create a custom-hosts.txt.
-
-See https://access.redhat.com/support/cases/#/case/04442017 for more information.
-
-The custom-hosts.txt follows the following format in Plaintext
-```
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-
-# Rendezvous / API VIPs
-<API_VIP_IP>      api.<clustername>.<basedomain>
-<API_INT_VIP_IP>  api-int.<clustername>.<basedomain>
-
-# OpenShift Nodes
-<Node1_IP>        <node1_lowercase_hostname>
-<Node2_IP>        <node2_lowercase_hostname>
-<Node3_IP>        <node3_lowercase_hostname>
-```
-Base64 Encode the File
-The MachineConfig object requires the file contents to be base64 encoded as a data URI. Run the following command in your terminal to get the encoded string:
-
-For example, this was the custom-hosts.txt for the Infra environment
-
-```
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-
-# Rendezvous / API VIPs
-10.11.0.24      api.infra.ocp.massopen.cloud api-int.infra.ocp.massopen.cloud
-10.11.0.25      console-openshift-console.apps.infra.ocp.massopen.cloud
-
-# OpenShift Nodes
-10.11.0.21      mocsec-r4pac06u33-3a
-10.11.0.22      mocsec-r4pac06u35-3a
-10.11.0.23      mocsec-r4pac06u37-3a
-```
-
-4. Get the base64 encoded version of custom-hosts.txt && echo
-
-  Bash
-  ```
-  cat custom-hosts.txt | base64 -w0
-  ```
-
-  You will use this in the next step as the value for `hosts_custom`.
-
-5. Ansible configuration to generate an install ISO
+3. Ansible configuration to generate an install ISO
 
 This process using the OpenShift Agent Based Installer method. You will generate an ISO to boot each server from, which will kick off the install.
 
@@ -109,7 +61,6 @@ This process using the OpenShift Agent Based Installer method. You will generate
 	svc_network: 172.30.0.0/16
 	api_ip: 10.13.0.24
 	ingress_ip: 10.13.0.25
-	hosts_custom: MTI3LjAuMC4xICAgbG9jYWxob3N0IGxvY2FsaG9zdC5sb2NhbGRvbWFpbiBsb2NhbGhvc3Q0IGxvY2FsaG9zdDQubG9jYWxkb21haW40Cjo6MSAgICAgICAgIGxvY2FsaG9zdCBsb2NhbGhvc3QubG9jYWxkb21haW4gbG9jYWxob3N0NiBsb2NhbGhvc3Q2LmxvY2FsZG9tYWluNgoKIyBSZW5kZXp2b3VzIC8gQVBJIFZJUHMKMTAuMTMuMC4yNCAgICAgIGFwaS5zdGFnaW5nLm9jcC5tYXNzb3Blbi5jbG91ZCBhcGktaW50LnN0YWdpbmcub2NwLm1hc3NvcGVuLmNsb3VkCjEwLjEzLjAuMjUgICAgICBjb25zb2xlLW9wZW5zaGlmdC1jb25zb2xlLmFwcHMuc3RhZ2luZy5vY3AubWFzc29wZW4uY2xvdWQKCiMgT3BlblNoaWZ0IE5vZGVzCjEwLjEzLjAuMjEgICAgICBtb2NzZWMtcjRwYWMwNnUzMy0zYgoxMC4xMy4wLjIyICAgICAgbW9jc2VjLXI0cGFjMDZ1MzUtM2IKMTAuMTMuMC4yMyAgICAgIG1vY3NlYy1yNHBhYzA2dTM3LTNi
 	pull_secret: <pull secret to download from Redhat Repo>
 	ssh_key: <use id_rsa_ocp.pub under /root/ssh on baston>
   ```
@@ -122,13 +73,13 @@ In the above example, to switch from the staging to infra environment, you would
 
 *TODO:* use template variables for these values with Ansible and put the values in an Ansible inventory file.
 
-6. Generate an OpenShift install ISO using Ansible
+4. Generate an OpenShift install ISO using Ansible
   ```
   ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=<cluser_name>"
   ```
 - The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
 
-7. Open an iDRAC session for each node you want to install on
+5. Open an iDRAC session for each node you want to install on
 
 VNC into the bastion to get a desktop with a browser.
 
@@ -152,7 +103,7 @@ Then, in each browser tab, open the virtual console:
 - Another popup about SSL may display briefly. Wait and it will disappear.
 - Another orange screen may appear briefly. Wait and it will disappear.
 
-8. Attach the ISO
+6. Attach the ISO
 
 - *IMPORTANT: DO NOT CLOSE THE BROWSER UNTIL CoreOS IS INSTALLED!!* Closing the window before that (which takes a long time), will cause the install to fail. If this happens, reboot the server, which will restart the long-running install process.
 - Select "Connect Virtual Media"
@@ -162,7 +113,7 @@ Then, in each browser tab, open the virtual console:
 - Confirm the bar at the top of the virtual console says "Virtual Media is connected", and "Devices Mapped: 1" and lists the name of your .iso file.
 - Close the Virtual Media popup.
 
-9. Reboot the server to begin the install
+7. Reboot the server to begin the install
 
 - From the iDRAC console for the node, power cycle the server.
 - Switch back to the Virtual Console popup.
@@ -175,7 +126,7 @@ Then, in each browser tab, open the virtual console:
 - Select "Virtual Optical Drive"
 - Confirm the selection
 
-10. Monitor the install from the bastion
+8. Monitor the install from the bastion
 
 - From the staging directory that holds the recently created agent_iso you can follow the install by running
   ```
@@ -187,7 +138,7 @@ Then, in each browser tab, open the virtual console:
   ```
   Once the bootstrap is complete, run this command. It will wait until all cluster operators are available, the worker nodes have joined, and the cluster is fully operational.
 
-11. Troubleshooting
+9. Troubleshooting
 
 *NOTE:* The install will appear to sit idle at various points, including one point where it displays a login prompt which will go away on its own. Be patient. If it looks like it is not progressing, wait at least 30 minutes before assuming it is broken.
 
