@@ -118,6 +118,15 @@
             disable_gpg_check: true  # Dell-signed (key 1285491434D8786F); key not in default RHEL9 keyring
             state: present
 
+        - name: Symlink unversioned libssl.so for racadm
+          # idracadm7 dlopen()s the unversioned "libssl.so"; RHEL9's openssl-libs
+          # only ships the versioned libssl.so.3 (unversioned symlink is normally
+          # only provided by openssl-devel, which we don't want on this host).
+          file:
+            src: /usr/lib64/libssl.so.3
+            dest: /usr/lib64/libssl.so
+            state: link
+
     - name: Verify Installations
       shell: "{{ bin_dir }}/{{ item }}"
       loop:
