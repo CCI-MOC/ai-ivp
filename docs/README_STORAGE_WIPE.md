@@ -38,3 +38,17 @@ blkdiscard -f /dev/sdX || true # Tell SSD everything is free
 lsblk -f /dev/sdX # Again to make sure it's clean
 sgdisk --print /dev/sdX # Make sure no partitions
 ```
+## To Wipe both drives
+1. There is a image that will wipe all drives on the system. **BE CAREFUL** Once started this process is automatic and can not be stopped. 
+
+2. Using iDRAC mount the ISO called
+   ```
+   rhel-9-autowipe.iso
+   ```
+3. After the image loads either wait 60 seconds or go
+   ```
+   Troubleings -> Repair a Linux Install
+   ```
+   A count down will start (10 seconds) before all drives are wiped and the system will shutdown. 
+   
+
