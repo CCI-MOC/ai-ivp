@@ -47,7 +47,7 @@ sgdisk --print /dev/sdX # Make sure no partitions
    ```
 3. After the image loads either wait 60 seconds or go
    ```
-   Troubleings -> Repair a Linux Install
+   Troubleshooting -> Repair a Linux Install
    ```
    A count down will start (10 seconds) before all drives are wiped and the system will shutdown. 
    
