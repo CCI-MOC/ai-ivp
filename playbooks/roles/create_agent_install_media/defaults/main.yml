@@ -1,0 +1,7 @@
+---
+# defaults file for create_agent_install_media
+
+# 'iso' generates a bootable ISO (mounted via iDRAC virtual media). 'pxe'
+# generates the equivalent boot-artifacts/ files (vmlinuz/initrd/rootfs/ipxe)
+# for network booting instead. Override with -e boot_method=pxe.
+boot_method: iso

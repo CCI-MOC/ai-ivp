@@ -1,5 +1,10 @@
 ---
-# tasks file for generate_agent_files
+# tasks file for create_agent_install_media
+- name: Validate boot_method
+  ansible.builtin.fail:
+    msg: "boot_method must be 'iso' or 'pxe', got: {{ boot_method }}"
+  when: boot_method not in ['iso', 'pxe']
+
 - name: Compute output directory paths
   ansible.builtin.set_fact:
     work_dir: "{{ playbook_dir }}/output/{{ cluster_name }}/work"
@@ -114,10 +119,24 @@
     cmd: "openshift-install-fips agent create image --dir {{ work_dir }} --log-level debug"
   register: iso_generation
   changed_when: true
+  when: boot_method == 'iso'
+
+- name: Generate the Agent PXE boot files
+  ansible.builtin.command:
+    cmd: "openshift-install-fips agent create pxe-files --dir {{ work_dir }} --log-level debug"
+  register: pxe_generation
+  changed_when: true
+  when: boot_method == 'pxe'
 
 - name: Display ISO location
   ansible.builtin.debug:
     msg: "ISO generated successfully at: {{ work_dir }}/agent.x86_64.iso"
+  when: boot_method == 'iso'
+
+- name: Display PXE boot files location
+  ansible.builtin.debug:
+    msg: "PXE boot files generated successfully in: {{ work_dir }}/boot-artifacts/"
+  when: boot_method == 'pxe'
 
 - name: Retrieve Kubeadmin credentials
   ansible.builtin.slurp:

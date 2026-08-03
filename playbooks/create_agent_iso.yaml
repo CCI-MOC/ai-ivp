@@ -1,9 +1,0 @@
----
-- name: Generate OpenShift Agent Installer Ignition Files
-  hosts: "{{ cluster_name }}"
-  connection: local
-
-  roles:
-    - create_agent_iso
-...
-

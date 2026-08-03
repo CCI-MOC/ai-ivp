@@ -1,0 +1,9 @@
+---
+- name: Generate OpenShift Agent Installer boot media
+  hosts: "{{ cluster_name }}"
+  connection: local
+
+  roles:
+    - create_agent_install_media
+...
+

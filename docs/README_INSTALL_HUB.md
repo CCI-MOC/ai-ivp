@@ -51,10 +51,11 @@ The one value that's actually sensitive is the Red Hat pull secret. It's kept ou
 
 `cluster_name` must match one of the clusters defined in `playbooks/inventory.yml` (currently `infra` or `staging`) — it selects which `group_vars` to build with.
   ```
-  ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=infra"
+  ansible-playbook playbooks/create_agent_install_media.yaml -e "cluster_name=infra"
   ```
 - Every run starts by wiping any previous output for that cluster, so there's no stale data left over from a prior/failed run.
 - The ISO is present at `playbooks/output/<cluster_name>/work/agent.x86_64.iso` and the kubeconfig/kubeadmin credentials are in `playbooks/output/<cluster_name>/work/auth/`.
+- This generates a bootable ISO by default. PXE boot files can be generated instead with `-e "cluster_name=infra boot_method=pxe"` (not currently used by the instructions below, which mount an ISO via iDRAC virtual media).
 
 5. Open an iDRAC session for each node you want to install on
 
