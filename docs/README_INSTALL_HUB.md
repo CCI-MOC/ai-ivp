@@ -105,7 +105,7 @@ Then, in each browser tab, open the virtual console:
 
 8. Monitor the install from the bastion
 
-- From the staging directory that holds the recently created agent_iso you can follow the install by running
+- `<installation_directory>` below is `playbooks/output/<cluster_name>/work` -- the same `cluster_name` you used in the `ansible-playbook` command in step 4. E.g. for `-e "cluster_name=infra"`, that's `playbooks/output/infra/work`.
   ```
   openshift-install agent wait-for bootstrap-complete --dir <installation_directory>
   ```
