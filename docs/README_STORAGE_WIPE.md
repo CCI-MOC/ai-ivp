@@ -9,9 +9,12 @@ Use these commands to thoroughly wipe a storage device. This can be used to eras
 *#WARNING: These commands wipe the system. Be careful where you run them.
 
 1. Confirm you are wiping the right device
+```
 lsblk -f # Check the partitions and device size
+```
 
-2. Wipe the storage device
+3. Wipe the storage device
+```
 ## NOTE: replace sdX with the device you found in the first step.
 wipefs -af /dev/sdX
 sgdisk --zap-all /dev/sdX
@@ -19,8 +22,10 @@ dd if=/dev/zero of=/dev/sdX bs=1M count=200 status=progress # Wipe beginning of 
 DISK_SIZE_MB=$(( $(blockdev --getsize64 /dev/sdX) / 1024 / 1024 ))
 dd if=/dev/zero of=/dev/sdX bs=1M seek=$((DISK_SIZE_MB - 200)) count=200 status=progress # Wipe end of disk
 blkdiscard -f /dev/sdX || true # Tell SSD everything is free
+```
 
 3. Verification
+```
 lsblk -f /dev/sdX # Again to make sure it's clean
 sgdisk --print /dev/sdX # Make sure no partitions
-
+```
