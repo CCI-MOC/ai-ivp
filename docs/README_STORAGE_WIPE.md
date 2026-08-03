@@ -12,12 +12,12 @@ Use these commands to thoroughly wipe a storage device. This can be used to eras
 lsblk -f # Check the partitions and device size
 
 2. Wipe the storage device
-## NOTE: replace sdX with the device you found in the first step
-sudo -i
+## NOTE: replace sdX with the device you found in the first step.
 wipefs -af /dev/sdX
 sgdisk --zap-all /dev/sdX
 dd if=/dev/zero of=/dev/sdX bs=1M count=200 status=progress # Wipe beginning of disk
-dd if=/dev/zero of=/dev/sdX bs=1M seek=-200 count=200 status=progress # Wipe end of disk
+DISK_SIZE_MB=$(( $(blockdev --getsize64 /dev/sdX) / 1024 / 1024 ))
+dd if=/dev/zero of=/dev/sdX bs=1M seek=$((DISK_SIZE_MB - 200)) count=200 status=progress # Wipe end of disk
 blkdiscard -f /dev/sdX || true # Tell SSD everything is free
 
 3. Verification
