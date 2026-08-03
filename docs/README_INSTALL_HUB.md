@@ -117,7 +117,7 @@ Then, in each browser tab, open the virtual console:
 
 9. Troubleshooting
 
-*NOTE:* The install will appear to sit idle at various points, including one point where it displays a login prompt which will go away on its own. Be patient. If it looks like it is not progressing, wait at least 30 minutes before assuming it is broken.
+**NOTE:** The install will appear to sit idle at various points, including one point where it displays a login prompt which will go away on its own. Be patient. If it looks like it is not progressing, wait at least 30 minutes before assuming it is broken.
 
 **NOTE:** The Common Installation Errors section below lists the symptoms and resolutions of commonly encountered issues.
 
