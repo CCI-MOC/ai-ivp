@@ -22,8 +22,4 @@ release-artifacts/
 .tmp/*
 local/
 *.gz
-playbooks/infra/
-playbooks/infra_backup/
-playbooks/staging/
-playbooks/staging_backup/
-playbooks/infra_rendered_manifests/
+playbooks/output/

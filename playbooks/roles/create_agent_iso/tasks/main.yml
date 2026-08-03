@@ -1,22 +1,37 @@
 ---
 # tasks file for generate_agent_files
+- name: Compute output directory paths
+  ansible.builtin.set_fact:
+    work_dir: "{{ playbook_dir }}/output/{{ cluster_name }}/work"
+    backup_dir: "{{ playbook_dir }}/output/{{ cluster_name }}/backup"
+    rendered_manifests_dir: "{{ playbook_dir }}/output/{{ cluster_name }}/rendered_manifests"
+
+- name: Clean up previous output for this cluster
+  # Wipe any leftover output from a prior run before starting -- stale files
+  # here (e.g. from a run that failed partway through) have previously caused
+  # confusing debugging sessions where it wasn't obvious a file was stale
+  # rather than freshly generated.
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/output/{{ cluster_name }}"
+    state: absent
+
 - name: Create install directory structure
   ansible.builtin.file:
-    path: "{{ cluster_name }}/machine-configs"
+    path: "{{ work_dir }}/machine-configs"
     state: directory
     mode: '0755'
     recurse: true
-    
+
 - name: Create openshift directory structure
   ansible.builtin.file:
-    path: "{{ cluster_name }}/openshift"
+    path: "{{ work_dir }}/openshift"
     state: directory
     mode: '0755'
     recurse: true
 
 - name: Render custom-hosts.txt
   ansible.builtin.template:
-    dest: "{{ cluster_name }}/custom-hosts.txt"
+    dest: "{{ work_dir }}/custom-hosts.txt"
     mode: '0644'
     src: custom-hosts.txt.j2
 
@@ -26,37 +41,37 @@
 
 - name: Create install-config.yaml
   ansible.builtin.template:
-    dest: "{{ cluster_name }}/install-config.yaml"
+    dest: "{{ work_dir }}/install-config.yaml"
     mode: '0755'
     src: install-config.j2
 
 - name: Create agent-config.yaml
   ansible.builtin.template:
-    dest: "{{ cluster_name }}/agent-config.yaml"
+    dest: "{{ work_dir }}/agent-config.yaml"
     mode: '0755'
     src: agent-config.j2
 
 - name: Create 99-master-custom-configs.yaml
   ansible.builtin.template:
-    dest: "{{ cluster_name }}/machine-configs/99-master-custom-configs.yaml"
+    dest: "{{ work_dir }}/machine-configs/99-master-custom-configs.yaml"
     mode: '0755'
     src: 99-master-custom-configs.j2
 
 - name: Create 99-worker-custom-configs.yaml
   ansible.builtin.template:
-    dest: "{{ cluster_name }}/machine-configs/99-worker-custom-configs.yaml"
+    dest: "{{ work_dir }}/machine-configs/99-worker-custom-configs.yaml"
     mode: '0755'
     src: 99-worker-custom-configs.j2
 
 - name: Create 98-master-var-lib-etcd.yaml
   ansible.builtin.template:
-    dest: "{{ cluster_name }}/openshift/98-master-var-lib-etcd.yaml"
+    dest: "{{ work_dir }}/openshift/98-master-var-lib-etcd.yaml"
     mode: '0755'
     src: 98-master-var-lib-etcd.j2
 
 - name: Create rendered manifests backup directory
   ansible.builtin.file:
-    path: "{{ cluster_name }}_rendered_manifests"
+    path: "{{ rendered_manifests_dir }}"
     state: directory
     mode: '0755'
 
@@ -65,8 +80,8 @@
   # by "create cluster-manifests" below, with nothing else in this playbook
   # keeping a copy -- back them up here so they're inspectable afterward.
   ansible.builtin.copy:
-    src: "{{ cluster_name }}/{{ item.src }}"
-    dest: "{{ cluster_name }}_rendered_manifests/{{ item.dest }}"
+    src: "{{ work_dir }}/{{ item.src }}"
+    dest: "{{ rendered_manifests_dir }}/{{ item.dest }}"
     remote_src: true
   loop:
     - { src: install-config.yaml, dest: install-config.yaml }
@@ -76,11 +91,11 @@
     - { src: openshift/98-master-var-lib-etcd.yaml, dest: 98-master-var-lib-etcd.yaml }
 
 - name: Create manifests from generated files
-  ansible.builtin.command: openshift-install-fips agent create cluster-manifests --dir {{ cluster_name }}
+  ansible.builtin.command: openshift-install-fips agent create cluster-manifests --dir {{ work_dir }}
 
 - name: Insert TPM configuration into agent-cluster-install.yaml
   ansible.builtin.blockinfile:
-    path: "{{ cluster_name }}/cluster-manifests/agent-cluster-install.yaml"
+    path: "{{ work_dir }}/cluster-manifests/agent-cluster-install.yaml"
     insertafter: '^\s*spec:\s*$'
     block: |2
         diskEncryption:
@@ -89,33 +104,32 @@
 
 - name: Backup install directory to preserve generated files
   ansible.builtin.copy:
-    src: "{{ cluster_name }}/"
-    dest: "{{ cluster_name }}_backup/"
+    src: "{{ work_dir }}/"
+    dest: "{{ backup_dir }}/"
     remote_src: true
 
 - name: Generate the Agent ISO
   # Use the absolute path or ensure openshift-install is in your $PATH
   ansible.builtin.command:
-    cmd: "openshift-install-fips agent create image --dir {{ cluster_name }} --log-level debug"
+    cmd: "openshift-install-fips agent create image --dir {{ work_dir }} --log-level debug"
   register: iso_generation
   changed_when: true
 
 - name: Display ISO location
   ansible.builtin.debug:
-    msg: "ISO generated successfully at: {{ cluster_name }}/agent.x86_64.iso"
+    msg: "ISO generated successfully at: {{ work_dir }}/agent.x86_64.iso"
 
 - name: Retrieve Kubeadmin credentials
   ansible.builtin.slurp:
-    src: "{{ cluster_name }}/auth/kubeadmin-password"
+    src: "{{ work_dir }}/auth/kubeadmin-password"
   register: kubeadmin_pass_encoded
-  
+
 - name: Show Kubeadmin Password
   ansible.builtin.debug:
     msg:
       - "KUBEADMIN PASSWORD - STORE SAFELY"
       - "-----------------------------------"
       - "Kubeadmin Password: {{ kubeadmin_pass_encoded['content'] | b64decode }}"
-      - "Kubeconfig Path: {{ playbook_dir }}/{{ cluster_name }}/auth/kubeconfig"
+      - "Kubeconfig Path: {{ work_dir }}/auth/kubeconfig"
       - "-----------------------------------"
 ...
-  

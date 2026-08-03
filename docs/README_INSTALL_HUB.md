@@ -53,7 +53,8 @@ The one value that's actually sensitive is the Red Hat pull secret. It's kept ou
   ```
   ansible-playbook playbooks/create_agent_iso.yaml -e "cluster_name=infra"
   ```
-- The ISO is present at <cluster_name>/agent.x86_64.iso and the kubesecret is present in <cluster_name>/auth
+- Every run starts by wiping any previous output for that cluster, so there's no stale data left over from a prior/failed run.
+- The ISO is present at `playbooks/output/<cluster_name>/work/agent.x86_64.iso` and the kubeconfig/kubeadmin credentials are in `playbooks/output/<cluster_name>/work/auth/`.
 
 5. Open an iDRAC session for each node you want to install on
 
@@ -84,7 +85,7 @@ Then, in each browser tab, open the virtual console:
 - *IMPORTANT: DO NOT CLOSE THE BROWSER UNTIL CoreOS IS INSTALLED!!* Closing the window before that (which takes a long time), will cause the install to fail. If this happens, reboot the server, which will restart the long-running install process.
 - Select "Connect Virtual Media"
 - Under "Map CD/DVD", select "Choose File"
-- Select the installation .iso file. It's the one you just generated, at `<cluster_name>/agent.x86_64.iso` in your home directory on the bastion.
+- Select the installation .iso file. It's the one you just generated, at `playbooks/output/<cluster_name>/work/agent.x86_64.iso` on the bastion.
 - Select "Map Device"
 - Confirm the bar at the top of the virtual console says "Virtual Media is connected", and "Devices Mapped: 1" and lists the name of your .iso file.
 - Close the Virtual Media popup.
