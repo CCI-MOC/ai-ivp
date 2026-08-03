@@ -54,6 +54,27 @@
     mode: '0755'
     src: 98-master-var-lib-etcd.j2
 
+- name: Create rendered manifests backup directory
+  ansible.builtin.file:
+    path: "{{ cluster_name }}_rendered_manifests"
+    state: directory
+    mode: '0755'
+
+- name: Preserve rendered manifests before openshift-install consumes them
+  # install-config.yaml and agent-config.yaml specifically get consumed/removed
+  # by "create cluster-manifests" below, with nothing else in this playbook
+  # keeping a copy -- back them up here so they're inspectable afterward.
+  ansible.builtin.copy:
+    src: "{{ cluster_name }}/{{ item.src }}"
+    dest: "{{ cluster_name }}_rendered_manifests/{{ item.dest }}"
+    remote_src: true
+  loop:
+    - { src: install-config.yaml, dest: install-config.yaml }
+    - { src: agent-config.yaml, dest: agent-config.yaml }
+    - { src: machine-configs/99-master-custom-configs.yaml, dest: 99-master-custom-configs.yaml }
+    - { src: machine-configs/99-worker-custom-configs.yaml, dest: 99-worker-custom-configs.yaml }
+    - { src: openshift/98-master-var-lib-etcd.yaml, dest: 98-master-var-lib-etcd.yaml }
+
 - name: Create manifests from generated files
   ansible.builtin.command: openshift-install-fips agent create cluster-manifests --dir {{ cluster_name }}
 
