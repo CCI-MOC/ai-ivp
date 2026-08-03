@@ -39,7 +39,7 @@ The one value that's actually sensitive is the Red Hat pull secret. It's kept ou
 
 - The first time you use a given cluster on this bastion, copy the schema template and fill in the real value:
   ```
-  cp playbooks/group_vars/<cluster_name>/secrets.yaml.example playbooks/group_vars/<cluster_name>/secrets.yaml
+  cp playbooks/group_vars/examples/secrets.yaml.example playbooks/group_vars/<cluster_name>/secrets.yaml
   ```
   ```yaml
   pull_secret: <pull secret to download from Redhat Repo>

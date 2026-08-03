@@ -1,0 +1,40 @@
+---
+cluster_name: infra-dev
+base_domain: ocp.massopen.cloud
+
+# ALL PLACEHOLDER:  Fill in real values here before actually installing to it.
+master1_hostname: mocsec-r4pac06u33-3c
+master1_mac: PLACEHOLDER_GET_MAC
+master1_ip: 10.14.0.21
+master1_install_drive_serial: PLACEHOLDER_GET_SERIAL
+master1_etcd_drive_wwn: "PLACEHOLDER_GET_WWN"
+
+master2_hostname: mocsec-r4pac06u35-3c
+master2_mac: PLACEHOLDER_GET_MAC
+master2_ip: 10.14.0.22
+master2_install_drive_serial: PLACEHOLDER_GET_SERIAL
+master2_etcd_drive_wwn: "PLACEHOLDER_GET_WWN"
+
+master3_hostname: mocsec-r4pac06u37-3c
+master3_mac: PLACEHOLDER_GET_MAC
+master3_ip: 10.14.0.23
+master3_install_drive_serial: PLACEHOLDER_GET_SERIAL
+master3_etcd_drive_wwn: "PLACEHOLDER_GET_WWN"
+
+machine_network: 10.14.0.0/24
+rendezvous_ip: 10.14.0.21
+gateway_ip: 10.14.0.1
+dns_ip: 10.14.0.1
+cluster_network: 10.128.0.0/14
+svc_network: 172.30.0.0/16
+ntp: 129.10.5.1
+
+api_ip: 10.14.0.24
+ingress_ip: 10.14.0.25
+
+# Not FIPS-enabled -- lets this cluster's ISO be generated and validated with
+# a plain (non-FIPS) openshift-install binary.
+fips_enabled: false
+
+# Public key -- not sensitive, safe to track in plain YAML.
+ssh_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDDVxQynzA12TBIZ0U/YXx00Un5EBBTDL6SBxjfW4ncc2cmeESJ6Pn+/CZw0iNvJqTMmsD7v9tTzrWkMVX1GedLOjqIiQcH4HzsetdkgT5Jjolnozlj7IWhpuI5kyMPsjS8spALTG0C2jFlQrepotTBaJNqoLk+7+qkQb2tGO8mKiyzJBDbZUqcdICXWbBcJD1EpVnwYywW8QhcIgD9+sZdkQy4n902jaI/5BOP32oYXrury+zpwtAZDu635pP3pPAqXVqvsN3rdIpA5SQ1qjSTiZWtuTFCVSsqWA1l9f5BTicwYYO+iMYMhI8SCRrllvpactnoxyUw58cHblh5d2CLjZknHBEQhkmNVdTi43Ad4YihIrCqfLHS7Gn8nCUlhxgKT1m/Y9ith9wkqxOgIuZrEFwkjJuw3qBWF7EZ7oqB1feuC5Ka0ziFQJk3TaahXF7TKBnKEhiNbf7IaI9DbxKaiAJkZBqE4OjPhJUAeS8uWhkSM26X0PwiEzKstWuDQrs=

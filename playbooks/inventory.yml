@@ -4,6 +4,10 @@ all:
       hosts:
         infra-cluster:
           ansible_connection: local
+    infra-dev:
+      hosts:
+        infra-dev-cluster:
+          ansible_connection: local
     staging:
       hosts:
         staging-cluster:

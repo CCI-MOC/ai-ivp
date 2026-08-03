@@ -15,7 +15,7 @@ networking:
   networkType: OVNKubernetes
   serviceNetwork:
   - {{ svc_network }}
-fips: true
+fips: {{ fips_enabled }}
 metadata:
   name: {{ cluster_name }}
 pullSecret: '{{ pull_secret }}'

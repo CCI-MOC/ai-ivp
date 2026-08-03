@@ -40,5 +40,7 @@ svc_network: 172.30.0.0/16
 api_ip: 10.13.0.24
 ingress_ip: 10.13.0.25
 
+fips_enabled: false
+
 # Public key -- not sensitive, safe to track in plain YAML.
-ssh_public_key: <use id_rsa_ocp.pub under /root/ssh on bastion>
+ssh_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQNK5dAcakvrvRzNrLKEK68iArxjwzeQ8OszmtBbcpHwfdPcGX9OSgb2fg3djxZvf0KA5T7u38njguEW18gxz+dDV1tJBthlRIcUs+RGHJ85vomgCVMAm9eXQCRKvCDI4/0733xyzdsJ+1UkM4rBrTR2mumQp2BOwYuUVcT/uXqxZFdvD1+kQ00VJKYqQh3ImjqSZbSHv7lE4PL6tezJpfd847nN9xT8u1HC+oNUZaS5QOl6XbEy3qnkT2k355pmS9BUPPwLxAAwIABjPmjkbhIL68u80/TB8RxOE6jEurBDTflc3J9wrHCeqxMq0QEQISDvlopVrhS1++y/dQNy1RoXsL+Uj7O5Hq/3aqigRvVoJkkERJSkS3nAKwXUVFVRLJimx3eHLGK9MbN1xkwnFfPS+43DwRvPKq56c5cEAvm32zDRpSTy7aaKfjrDhwfztaiQszWcRzfi5kiA7m4bB/AIOBBkEM4eGfy06OxCEtxVKNpBnefE0GfNh0EcFT0Rk=
