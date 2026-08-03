@@ -9,7 +9,7 @@ hosts:
   - hostname: {{ master1_hostname }}
     role: master
     rootDeviceHints:
-      deviceName: {{ master1_install_drive }}
+      serialNumber: {{ master1_install_drive_serial }}
     interfaces:
       - name: eno1
         macAddress: {{ master1_mac }}
@@ -36,7 +36,7 @@ hosts:
   - hostname: {{ master2_hostname }}
     role: master
     rootDeviceHints:
-      deviceName: {{ master2_install_drive }}
+      serialNumber: {{ master2_install_drive_serial }}
     interfaces:
       - name: eno1
         macAddress: {{ master2_mac }}
@@ -63,7 +63,7 @@ hosts:
   - hostname: {{ master3_hostname }}
     role: master
     rootDeviceHints:
-      deviceName: {{ master3_install_drive }}
+      serialNumber: {{ master3_install_drive_serial }}
     interfaces:
       - name: eno1
         macAddress: {{ master3_mac }}

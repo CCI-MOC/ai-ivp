@@ -2,22 +2,28 @@
 cluster_name: staging
 base_domain: ocp.massopen.cloud
 
+# PLACEHOLDER: install_drive_serial values below are not yet confirmed --
+# unlike Infra, Staging's serials were never gathered from a live node this
+# session. Get them via:
+#   oc debug node/<hostname> -- chroot /host lsblk -o NAME,SIZE,SERIAL,WWN
+# and use the serial for the device matching master{N}_install_drive's old
+# device name (etcd_drive is unaffected -- still device-name based).
 master1_hostname: mocsec-r4pac06u33-3b
 master1_mac: a8:99:69:82:9b:dd
 master1_ip: 10.13.0.21
-master1_install_drive: /dev/sda
+master1_install_drive_serial: PLACEHOLDER_GET_SERIAL_FOR_SDA
 master1_etcd_drive: /dev/sdc
 
 master2_hostname: mocsec-r4pac06u35-3b
 master2_mac: 40:5c:fd:68:41:5d
 master2_ip: 10.13.0.22
-master2_install_drive: /dev/sdb
+master2_install_drive_serial: PLACEHOLDER_GET_SERIAL_FOR_SDB
 master2_etcd_drive: /dev/sdc
 
 master3_hostname: mocsec-r4pac06u37-3b
 master3_mac: 10:7d:1a:9c:57:5d
 master3_ip: 10.13.0.23
-master3_install_drive: /dev/sda
+master3_install_drive_serial: PLACEHOLDER_GET_SERIAL_FOR_SDA
 master3_etcd_drive: /dev/sdb
 
 rendezvous_ip: 10.13.0.21
