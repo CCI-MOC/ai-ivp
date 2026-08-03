@@ -164,7 +164,7 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
            "FlashBlades": [
              {
                "MgmtEndPoint": "10.3.11.50",
-               "APIToken": "T-ab3ca441-baf1-4742-8bb1-7c384562fd59",
+               "APIToken": "<API-TOKEN>",
                "Realm": "infra-ocp-massopen",
                "NFSEndPoint": "10.8.0.10"
              }
