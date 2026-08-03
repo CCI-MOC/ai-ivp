@@ -134,65 +134,29 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 ### Post-Openshift Install Setup
 
 - These steps must be performed after the OpenShift cluster install is complete, before Autoshift can be installed.
-  1. Pre-configure the required secrets. 
-     Since there is not a Secrets Mananger the following secrets will be needed to be created manually:
-	 - Create these namespaces: "cert-mananger" and "portworx"
+- `playbooks/post_install_setup.yaml` is a general playbook intended to eventually automate this whole section. Right now it only covers step 1 below -- steps 2, 3, 7, and 8 are still manual, as described further down.
+  1. Pre-configure the required secrets.
 
-         - Create a github client secret
-	 ```
-	 oc create secret generic github-client-secret --from-literal=clientId=<YOUR_GITHUB_ID> --from-literal=clientSecret=<YOUR_GITHUB_CLIENT_SECRET> --from-literal=teamst=<YOUR_GITHUB_CLIENT_TEAMS>-n openshift-config
-	 ```
+     This is automated via `playbooks/post_install_setup.yaml`, which creates the `cert-manager` and `portworx` namespaces and the `github-client-secret`, `px-pure-secret`, and `aws-route53-credentials` secrets described below. It's idempotent (safe to re-run) and pulls its sensitive values from an ansible-vault-encrypted file rather than a Secrets Manager.
 
-         The resulting Secret object should look like this:
+     - The first time you use a given cluster, copy the schema template and fill in real values:
+       ```
+       cp playbooks/vault/examples/post_install_secrets.yaml.example playbooks/vault/<cluster_name>/post_install_secrets.yaml
+       ansible-vault encrypt playbooks/vault/<cluster_name>/post_install_secrets.yaml
+       ```
+       See the file for the exact fields needed: GitHub OAuth app client ID/secret/teams, and AWS access key ID/secret access key for Route53.
+     - `pure.json` is different -- it's provided as-is by the storage admin, so there's no YAML to fill in. Just drop their file in place and encrypt it:
+       ```
+       cp <the pure.json the storage admin gave you> playbooks/vault/<cluster_name>/pure.json
+       ansible-vault encrypt playbooks/vault/<cluster_name>/pure.json
+       ```
+     - Run the playbook (prompts for the vault password; no vault password file is used or stored anywhere in this repo):
+       ```
+       ansible-playbook playbooks/post_install_setup.yaml -e "cluster_name=infra" --ask-vault-pass
+       ```
+     - To change values later, edit with `ansible-vault edit playbooks/vault/<cluster_name>/post_install_secrets.yaml` (or `pure.json`) and re-run the playbook.
 
-	 ```
-	 kind: Secret
-	 apiVersion: v1
-	 metadata:
-	   name: github-client-secret
-	   namespace: openshift-config
-	 stringData:
-	   clientID: <Github Client ID>
-	   clientSecret: <Github Client Secret>
-	   teams: <Teams that are allow in >
-	 type: Opaque
-	  ```
-
-         - Create a pure.json file
-         ```
-         {
-           "FlashBlades": [
-             {
-               "MgmtEndPoint": "10.3.11.50",
-               "APIToken": "<API-TOKEN>",
-               "Realm": "infra-ocp-massopen",
-               "NFSEndPoint": "10.8.0.10"
-             }
-           ]
-         }
-         ``` 
-	 - Create the pure.json secret from the pure.json file under the portworx namespace
-	 ```
-	 oc create secret generic px-pure-secret --from-file=pure.json=<file path> --namespace portworx
-	 ```
-
-	 - Create the aws-route53-credentials secret in the cert-manager namespace. 
-	 ```
-		kind: Secret
-		apiVersion: v1
-		metadata:
-		  name: aws-route53-credentials
-		  namespace: cert-manager
-		stringData:
-		  accessKeyID: <AWS ACCESS KEY>
-		  commonName: <common name for the server, ie *.apps.staging.ocp.massopen.cloud>
-		  dnsNames: <dns that will be controlled by the cert, ie *.apps.staging.ocp.massopen.cloud >
-		  issuer-name: <A name for the issuer, ie letsencrypt-route53-staging>
-		  secret-access-key: <The AWS Secret Access Key>
-		type: Opaque
-
-	 ```
-	 Can also be added by command line like above. 
+     `commonName`, `dnsNames`, and `issuer-name` on the `aws-route53-credentials` secret aren't stored anywhere -- they're derived automatically from `cluster_name`/`base_domain` (e.g. `*.apps.infra.ocp.massopen.cloud`, `letsencrypt-route53-infra`).
 
    2. Install the nmstate operator
       Since before Portworx can communicate with the flash blade servers we need to have some Network Setup configure first. We only need a default nmstate instance so that the CRD resource type can be created.
