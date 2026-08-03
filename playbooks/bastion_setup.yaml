@@ -87,6 +87,30 @@
             mode: '0755'
             remote_src: true
 
+    - name: Install and configure TFTP server for PXE booting
+      # Serves whatever boot files a DHCP server's "Network Booting" settings
+      # point PXE clients at. The actual boot files (e.g. from the agent
+      # installer) are generated/placed separately -- this just gets the
+      # server itself running with its default root (/var/lib/tftpboot).
+      block:
+        - name: Install TFTP server
+          ansible.builtin.dnf:
+            name: tftp-server
+            state: present
+
+        - name: Enable and start the TFTP socket
+          ansible.builtin.service:
+            name: tftp.socket
+            state: started
+            enabled: true
+
+        - name: Open TFTP (UDP 69) in the firewall
+          ansible.posix.firewalld:
+            service: tftp
+            permanent: true
+            immediate: true
+            state: enabled
+
     - name: Verify Installations
       ansible.builtin.command: "{{ item.0 }}/{{ item.1 }}"
       loop:
