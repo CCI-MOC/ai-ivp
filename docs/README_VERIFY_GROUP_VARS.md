@@ -13,7 +13,7 @@ oc debug node/<hostname> -- chroot /host cat /sys/class/net/eno1/address
 
 Run the first command before trusting the second — interface naming isn't guaranteed to be `eno1` on every node, so confirm it's actually the interface holding the node's known IP first.
 
-## Storage devices -- boot vs. etcd drive (`master{N}_install_drive_serial` / `master{N}_etcd_drive`)
+## Storage devices -- boot vs. etcd drive (`master{N}_install_drive_serial` / `master{N}_etcd_drive_wwn`)
 
 ```bash
 oc debug node/<hostname> -- chroot /host lsblk -b -o NAME,SIZE,TYPE,RM,MOUNTPOINT,SERIAL,WWN
@@ -21,7 +21,7 @@ oc debug node/<hostname> -- chroot /host lsblk -b -o NAME,SIZE,TYPE,RM,MOUNTPOIN
 
 Use `-b` for exact byte counts -- human-readable units (`186.3G` vs `0B`) are easy to misread in a wrapped terminal paste, which previously produced a false "missing hardware" conclusion for one node.
 
-`master{N}_install_drive_serial` is the `SERIAL` of whichever disk has the boot partitions mounted (`/`, `/boot`). `master{N}_etcd_drive` is still device-name based (a separate mechanism, matched by hostname in `98-master-var-lib-etcd.j2`) -- use the device name of the other real disk.
+`master{N}_install_drive_serial` is the `SERIAL` of whichever disk has the boot partitions mounted (`/`, `/boot`). `master{N}_etcd_drive_wwn` is the `WWN` of the other real disk (matched by hostname in `98-master-var-lib-etcd.j2`, resolved via `/dev/disk/by-id/wwn-<value>`) -- **must be quoted** in `vars.yml` (`"0x..."`), since an unquoted `0x...` value gets parsed as a hex integer by YAML and Jinja renders it back out in decimal.
 
 ## Gateway (`gateway_ip`)
 

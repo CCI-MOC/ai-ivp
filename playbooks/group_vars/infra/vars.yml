@@ -2,26 +2,28 @@
 cluster_name: infra
 base_domain: ocp.massopen.cloud
 
-# install_drive_serial confirmed via `lsblk -o NAME,SIZE,SERIAL,WWN` against
-# the live master nodes. etcd_drive is still device-name based (a separate
-# mechanism in 98-master-var-lib-etcd.j2, matched by hostname).
+# install_drive_serial/etcd_drive_wwn confirmed via
+# `lsblk -o NAME,SIZE,SERIAL,WWN` against the live master nodes. etcd_drive_wwn
+# is matched by hostname in 98-master-var-lib-etcd.j2, resolved via
+# /dev/disk/by-id/wwn-<value>. etcd_drive_wwn MUST be quoted -- YAML parses an
+# unquoted 0x... value as a hex integer, and Jinja renders it back in decimal.
 master1_hostname: mocsec-r4pac06u33-3a
 master1_mac: a8:99:69:82:99:9b
 master1_ip: 10.11.0.21
 master1_install_drive_serial: BTHC712204J1200QGN
-master1_etcd_drive: /dev/sdc
+master1_etcd_drive_wwn: "0x55cd2e414db91779"
 
 master2_hostname: mocsec-r4pac06u35-3a
 master2_mac: 40:5c:fd:68:3f:1b
 master2_ip: 10.11.0.22
 master2_install_drive_serial: BTHC650104AJ200QGN
-master2_etcd_drive: /dev/sdb
+master2_etcd_drive_wwn: "0x55cd2e414d90b8ea"
 
 master3_hostname: mocsec-r4pac06u37-3a
 master3_mac: 10:7d:1a:9c:55:1b
 master3_ip: 10.11.0.23
 master3_install_drive_serial: BTHC70400116200QGN
-master3_etcd_drive: /dev/sdb
+master3_etcd_drive_wwn: "0x55cd2e414da035e8"
 
 # Confirmed via oc debug against the live master nodes (br-ex: 10.11.0.21/24).
 machine_network: 10.11.0.0/24

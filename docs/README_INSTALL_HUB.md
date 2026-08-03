@@ -393,5 +393,5 @@ lsblk -o NAME,SIZE,SERIAL,WWN
 Look at the size column. Two devices will have a size of 186.3G -- one will be the OpenShift boot drive, the other dedicated as storage for this cluster's etcd.
 
 - For the **boot drive**, note its `SERIAL` -- this goes in `master{N}_install_drive_serial` in `playbooks/group_vars/<cluster_name>/vars.yml`.
-- For the **etcd drive**, note its device name (`sda`/`sdb`/...) instead -- this one is still matched by device name (a separate mechanism in `98-master-var-lib-etcd.j2`, matched by hostname rather than `rootDeviceHints`), so goes in `master{N}_etcd_drive` as `/dev/sdX`.
+- For the **etcd drive**, note its `WWN` instead -- this one is matched by hostname in `98-master-var-lib-etcd.j2` rather than `rootDeviceHints`, so goes in `master{N}_etcd_drive_wwn`. **Must be quoted** (e.g. `"0x55cd2e414db91779"`) -- an unquoted `0x...` value gets parsed as a hex integer by YAML, and Jinja renders it back out in decimal.
 
