@@ -21,7 +21,7 @@ spec:
 
             [Service]
             Type=oneshot
-            ExecStart=/bin/bash -c 'HOST=$(hostname); if [[ "$HOST" == *"{{ master1_hostname }}"* ]]; then TARGET="/dev/disk/by-id/wwn-{{ master1_etcd_drive_wwn }}"; elif [[ "$HOST" == *"{{ master2_hostname }}"* ]]; then TARGET="/dev/disk/by-id/wwn-{{ master2_etcd_drive_wwn }}"; elif [[ "$HOST" == *"{{ master3_hostname }}"* ]]; then TARGET="/dev/disk/by-id/wwn-{{ master3_etcd_drive_wwn }}"; else exit 0; fi; sgdisk -Z $TARGET && sgdisk -n 1:0:0 -c 1:etcd $TARGET && partprobe $TARGET && udevadm settle && mkfs.xfs -f /dev/disk/by-partlabel/etcd'
+            ExecStart=/bin/bash -c 'HOST=$(hostname); if [[ "$HOST" == *"{{ master1_hostname }}"* ]]; then TARGET="/dev/disk/by-id/wwn-{{ master1_etcd_drive_wwn }}"; elif [[ "$HOST" == *"{{ master2_hostname }}"* ]]; then TARGET="/dev/disk/by-id/wwn-{{ master2_etcd_drive_wwn }}"; elif [[ "$HOST" == *"{{ master3_hostname }}"* ]]; then TARGET="/dev/disk/by-id/wwn-{{ master3_etcd_drive_wwn }}"; else exit 0; fi; sgdisk -Z $TARGET && sgdisk -n 1:0:0 -c 1:etcd $TARGET && udevadm settle && mkfs.xfs -f /dev/disk/by-partlabel/etcd'
 
             [Install]
             WantedBy=local-fs.target
