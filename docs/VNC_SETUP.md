@@ -35,6 +35,8 @@ Leave port 5901 **closed** on the firewall — access is only via SSH tunnel, ne
 
 ## 2. Set up config for the user
 
+ssh into the bastion and run the following commands:
+
 Set a VNC password (separate from your system login password):
 ```bash
 vncpasswd
