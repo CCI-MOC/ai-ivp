@@ -379,6 +379,8 @@ To fix this, reboot the node and press (TBD key) to enter the egrub menu. Then a
 
 If a cluster is already installed and you're about to wipe it for a reinstall, see [Verifying group_vars against a live cluster](README_VERIFY_GROUP_VARS.md) to confirm `playbooks/group_vars/<cluster_name>/vars.yml` still matches live state first -- once the nodes are wiped, you lose the ability to check.
 
+Also wipe **both** the boot disk and the etcd disk on each node before reinstalling -- see [Storage Device Wipe](README_STORAGE_WIPE.md). Briefly: leftover partition state from the previous install can make our own MachineConfigs silently skip work they should redo, and can generally confuse the OS installer on the boot disk.
+
 ### Gathering the storage device names for each node
 
 *NOTE: For existing environments, these are documented in [Environment Details](/docs/ENVIRONMENT.md)
