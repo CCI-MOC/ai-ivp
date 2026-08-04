@@ -1,0 +1,4 @@
+---
+# defaults file for deploy_pxe_boot_media
+tftp_root: /var/lib/tftpboot
+http_docroot: /var/www/html

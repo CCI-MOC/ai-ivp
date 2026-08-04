@@ -1,0 +1,11 @@
+set timeout=0
+
+# Kernel args match what `openshift-install agent create pxe-files` itself
+# emits in boot-artifacts/agent.x86_64.ipxe, only
+# translating iPXE's named-initrd registration (`initrd --name` +
+# `initrd=initrd`) to GRUB's own `initrd` command, which hands the initrd to
+# the kernel directly and has no use for that name.
+echo "Booting {{ cluster_name }} :: {{ item.hostname }}"
+linux http://{{ bastion_ip }}/{{ cluster_name }}/agent.x86_64-vmlinuz coreos.live.rootfs_url=http://{{ bastion_ip }}/{{ cluster_name }}/agent.x86_64-rootfs.img rw ignition.firstboot ignition.platform.id=metal
+initrd http://{{ bastion_ip }}/{{ cluster_name }}/agent.x86_64-initrd.img
+boot

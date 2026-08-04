@@ -3,6 +3,9 @@ kind: AgentConfig
 metadata:
   name: {{ cluster_name }}
 rendezvousIP: {{ rendezvous_ip }}
+{% if boot_method == 'pxe' %}
+bootArtifactsBaseURL: http://{{ bastion_ip }}/{{ cluster_name }}
+{% endif %}
 additionalNTPSources:
   - {{ ntp }}
 hosts:

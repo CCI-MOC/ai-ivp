@@ -1,0 +1,9 @@
+---
+- name: Deploy OpenShift Agent Installer PXE boot media
+  hosts: "{{ cluster_name }}"
+  connection: local
+  become: true
+
+  roles:
+    - deploy_pxe_boot_media
+...

@@ -38,6 +38,15 @@
         state: started
         enabled: true
 
+    - name: Open HTTP (TCP 80) in the firewall
+      # needed for deploy_agent_boot_media.yaml, which serves the
+      # PXE rootfs over HTTP rather than TFTP.
+      ansible.posix.firewalld:
+        service: http
+        permanent: true
+        immediate: true
+        state: enabled
+
     - name: Download OpenShift 4.21 Client and Installer
       ansible.builtin.get_url:
         url: "{{ base_url }}/{{ item }}"

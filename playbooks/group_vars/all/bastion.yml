@@ -1,0 +1,3 @@
+---
+# Shared across every cluster (single bastion) -- see docs/ENVIRONMENT.md.
+bastion_ip: 10.11.0.20

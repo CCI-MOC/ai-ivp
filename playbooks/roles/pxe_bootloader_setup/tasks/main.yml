@@ -1,0 +1,42 @@
+---
+# tasks file for pxe_bootloader_setup
+#
+# One-time, bastion-wide setup shared by every cluster's PXE boot media --
+# separate from deploy_pxe_boot_media (which runs on every cluster's every
+# deploy) because this only ever needs to run once per bastion.
+#
+# Installs the Secure Boot chain PXE clients need: shim chainloading grub2-efi
+# Both are copied is from their RPMs so that they have the signature required by Secure Boot.
+#
+- name: Ensure shim and GRUB UEFI packages are installed
+  ansible.builtin.dnf:
+    name:
+      - shim-x64
+      - grub2-efi-x64
+    state: present
+
+- name: Locate the packaged shim and GRUB binaries
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: bootloader_src_stat
+  loop:
+    - "{{ shim_src_path }}"
+    - "{{ grub_src_path }}"
+
+- name: Fail if either packaged binary isn't where we expect
+  ansible.builtin.fail:
+    msg: "{{ item.item }} not found -- check the package layout on this RHEL version and update shim_src_path/grub_src_path."
+  when: not item.stat.exists
+  loop: "{{ bootloader_src_stat.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Copy shim and GRUB to the TFTP root
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ tftp_root }}/{{ item.dest }}"
+    mode: '0644'
+    remote_src: true
+  loop:
+    - { src: "{{ shim_src_path }}", dest: shimx64.efi }
+    - { src: "{{ grub_src_path }}", dest: grubx64.efi }

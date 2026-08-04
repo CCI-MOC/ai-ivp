@@ -1,0 +1,99 @@
+---
+# tasks file for deploy_pxe_boot_media
+#
+# Takes the boot-artifacts/ produced by create_agent_install_media.yaml
+# (-e boot_method=pxe) and publishes them for real network boot: kernel,
+# initrd, and rootfs all go on the bastion's existing httpd. TFTP
+# serves the shim/grub bootloader chain and the per-MAC GRUB
+# configs that point at these HTTP URLs.
+#
+# Assumes pxe_bootloader_setup.yaml has already been run once on this
+# bastion (installs the shared shimx64.efi/grubx64.efi Secure Boot chain) --
+# this role only ever handles per-cluster, run-every-time work.
+- name: Locate generated PXE boot media for this cluster
+  ansible.builtin.stat:
+    path: "{{ playbook_dir }}/output/{{ cluster_name }}/work/boot-artifacts"
+  register: boot_artifacts_dir
+
+- name: Fail if PXE boot media hasn't been generated yet
+  ansible.builtin.fail:
+    msg: >-
+      No PXE boot media found at
+      {{ playbook_dir }}/output/{{ cluster_name }}/work/boot-artifacts.
+      Generate it first with: ansible-playbook
+      playbooks/create_agent_install_media.yaml -e
+      "cluster_name={{ cluster_name }} boot_method=pxe"
+  when: not (boot_artifacts_dir.stat.exists and boot_artifacts_dir.stat.isdir)
+
+- name: Check the PXE bootloader chain is already set up
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  register: bootloader_stat
+  loop:
+    - "{{ tftp_root }}/shimx64.efi"
+    - "{{ tftp_root }}/grubx64.efi"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Fail if the PXE bootloader chain hasn't been set up yet
+  ansible.builtin.fail:
+    msg: >-
+      {{ item.item }} not found. Run: ansible-playbook
+      playbooks/pxe_bootloader_setup.yaml once on this bastion first
+      (one-time, shared across all clusters).
+  when: not item.stat.exists
+  loop: "{{ bootloader_stat.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Create per-cluster HTTP directory for boot artifacts
+  ansible.builtin.file:
+    path: "{{ http_docroot }}/{{ cluster_name }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy kernel, initrd, and rootfs to httpd
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/output/{{ cluster_name }}/work/boot-artifacts/{{ item }}"
+    dest: "{{ http_docroot }}/{{ cluster_name }}/{{ item }}"
+    mode: '0644'
+    remote_src: true
+  loop:
+    - agent.x86_64-vmlinuz
+    - agent.x86_64-initrd.img
+    - agent.x86_64-rootfs.img
+
+- name: Restore SELinux context on the copied boot artifacts
+  ansible.builtin.command: "restorecon -R {{ http_docroot }}/{{ cluster_name }}"
+  changed_when: false
+
+- name: Build list of this cluster's master nodes
+  ansible.builtin.set_fact:
+    boot_media_nodes:
+      - hostname: "{{ master1_hostname }}"
+        mac: "{{ master1_mac }}"
+      - hostname: "{{ master2_hostname }}"
+        mac: "{{ master2_mac }}"
+      - hostname: "{{ master3_hostname }}"
+        mac: "{{ master3_mac }}"
+
+- name: Write per-MAC GRUB netboot config for each master
+  # GRUB's network boot natively searches for grub.cfg-01-<mac> (dashes,
+  # lowercase) before falling back to a generic grub.cfg -- so each node
+  # gets routed to the right cluster's kernel/initrd/rootfs with no shared
+  # file to coordinate across separate per-cluster deploy runs. Written to
+  # tftp_root directly since that's where the signed grubx64.efi looks for its config.
+  ansible.builtin.template:
+    src: grub-netboot.cfg.j2
+    dest: "{{ tftp_root }}/grub.cfg-01-{{ item.mac | lower | replace(':', '-') }}"
+    mode: '0644'
+  loop: "{{ boot_media_nodes }}"
+  loop_control:
+    label: "{{ item.hostname }} ({{ item.mac }})"
+
+- name: Display DHCP configuration reminder
+  ansible.builtin.debug:
+    msg:
+      - "PXE boot media for '{{ cluster_name }}' is published."
+      - "DHCP's 'Next Server' must be {{ bastion_ip }}, and 'UEFI 64 bit File Name' must be shimx64.efi (no path prefix)."
+      - "Nodes are routed to this cluster's image by MAC address (grub.cfg-01-<mac> under {{ tftp_root }})."

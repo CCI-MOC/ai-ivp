@@ -1,0 +1,9 @@
+---
+- name: One-time PXE bootloader setup
+  hosts: localhost
+  connection: local
+  become: true
+
+  roles:
+    - pxe_bootloader_setup
+...

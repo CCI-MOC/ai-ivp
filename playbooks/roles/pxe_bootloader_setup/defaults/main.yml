@@ -1,0 +1,9 @@
+---
+# defaults file for pxe_bootloader_setup
+tftp_root: /var/lib/tftpboot
+
+# Where the shim-x64/grub2-efi-x64 RPMs install their Red Hat-signed
+# binaries on RHEL9. Copied as-is (no rebuild) -- Secure Boot requires the
+# real signed binaries, not a locally-assembled image.
+shim_src_path: /boot/efi/EFI/redhat/shimx64.efi
+grub_src_path: /boot/efi/EFI/redhat/grubx64.efi
