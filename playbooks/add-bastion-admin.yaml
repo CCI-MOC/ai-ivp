@@ -1,6 +1,6 @@
 ---
 - name: Provision Bastion Admin Accounts
-  hosts: localhost
+  hosts: bastion
   become: true
   vars:
     sudo_timeout_mins: 30
