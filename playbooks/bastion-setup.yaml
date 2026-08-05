@@ -1,7 +1,6 @@
 ---
 - name: Setup OpenShift 4.21 Bastion Infrastructure
-  hosts: localhost
-  connection: local
+  hosts: bastion
   become: true
   vars:
     # OpenShift 4.21.0 Specifics
@@ -88,6 +87,7 @@
             remote_src: true
 
     - name: Install and configure TFTP server for PXE booting
+      when: false
       # Serves whatever boot files a DHCP server's "Network Booting" settings
       # point PXE clients at. The actual boot files (e.g. from the agent
       # installer) are generated/placed separately -- this just gets the

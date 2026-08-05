@@ -1,0 +1,7 @@
+all:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  hosts:
+    bastion:
+      ansible_host: gw.oac.int.massopen.cloud
+      ansible_user: root
