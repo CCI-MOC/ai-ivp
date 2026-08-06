@@ -30,6 +30,8 @@
           - bind-utils
           - httpd
           - python3-netaddr
+          - rsync
+          - ansible
         state: present
 
     - name: Start and enable Apache (httpd)
