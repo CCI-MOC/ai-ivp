@@ -29,6 +29,8 @@
           - tar
           - bind-utils
           - httpd
+          - rsync
+          - ansible
         state: present
 
     - name: Start and enable Apache (httpd)
