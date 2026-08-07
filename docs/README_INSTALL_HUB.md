@@ -248,7 +248,7 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 
       From the OpenShift Console go to:
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
-	  Apply the following file that will set Portworx as the default storage class. 
+	  Apply the following file that will set Portworx as the default storage class. File is located under <project root>/install
 	  StorageClass.yaml
 	  ```
 				allowVolumeExpansion: true
