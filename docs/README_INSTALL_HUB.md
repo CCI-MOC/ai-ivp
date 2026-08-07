@@ -164,86 +164,34 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	  - Search for "Nmstate" and click on "Kubernetes NMState Operator". 
 	  - Choose all the default settings and install
 	  - After the Nmstate operator is installed go to it, click on the NMState tab, and create a default instanace of NMState (you do not have to fill out anything). 
-	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine. Files are also located under <project root>/install
+	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine. Files are also located under ai-ivp/install
            *Note:* These values work for both staging and infra because they have the same networking for portworx.
-	    
+	  - Run the following commands to apply the required files:
 		**`AdminNetworkPolicy.yaml`**
 	   ```
-	    kind: AdminNetworkPolicy
-		apiVersion: policy.networking.k8s.io/v1alpha1 
-		metadata:
-		  name: deny-pure-storage-api
-		spec:
-		  priority: 10
-		  subject:
-			namespaces:
-			  matchExpressions:
-				- key: kubernetes.io/metadata.name
-				  operator: NotIn
-				  values: [portworx]
-			  egress:
-			  - name: deny-pure-api
-				action: Deny
-				to:
-				  - networks:
-					- "10.3.11.50/32"
+		oc apply -f ai-ivp/install/AdminNetworkPolicy.yaml
 	   ```
 		
 	   and
 	   
 	   **`NodeNetworkConfigurationPolicy.yaml`**
 	   ```
-		apiVersion: nmstate.io/v1
-		kind: NodeNetworkConfigurationPolicy
-		metadata:
-		  name: eno1-vlan-2305
-		spec:
-		  desiredState:
-			interfaces:
-			  - name: eno1.2305
-				type: vlan
-				state: up
-				vlan:
-				  base-iface: eno1
-				  id: 2305
-				ipv4:
-				  enabled: true
-				  dhcp: true
-				  auto-gateway: false
-				  auto-routes: false	 
+		oc apply -f ai-ivp/install/NodeNetworkConfigurationPolicy.yaml
 	   ```
 	  
 	  
    3. Install portworx
      In order to install Autoshift we need the ability to create storage. Install and setting up Portworx will give our cluster access to storage on demand. 
 	 - Manually install the Potworx Operator from the Openshift Software Catalog. You can find it on the left side of the Console under Ecosystem -> Software Catalog
-	 - Search for "Portworx" and click on "Portworx Enterprise Operator". You can keep all the default options. 
+	 - Search for "Portworx" and click on "Portworx Enterprise Operator".  Click on Install
+	 - **Change the namespace location to "portworx"**. You can keep all other options to default. 
 	 - After installing go to Ecosystem -> Installed Operators -> Portworx Enterprise. Select "All Projects" on the upper Left-Center to check everwhere. 
-	 - Click on the StorageCluster Tab and create a new StorageCluster. File is located under <project root>/install
-           *Note:* Thes values work for both staging and infra.
-	   
+	 - Click on the StorageCluster Tab and create a new StorageCluster. File is located under ai-ivp/install
+       *Note:* Thes values work for both staging and infra.
+	 - The StorageCluster can also be added by running the following command
 	   **`StorageCluster.yaml`**
 	   ```
-	        kind: StorageCluster
-                apiVersion: core.libopenstorage.org/v1
-                metadata:
-                  name: px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015
-                  namespace: portworx
-                  annotations:
-                    portworx.io/install-source: "https://install.portworx.com/26.1?oem=px-csi&operator=true&ce=pure&csi=true&stork=false&kbver=1.34.6&ns=portworx&osft=true&c=px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015&tel=true"
-                    portworx.io/is-openshift: "true"
-                    portworx.io/misc-args: "--oem px-csi"
-                spec:
-                  image: portworx/px-pure-csi-driver:26.2.0
-                  imagePullPolicy: Always
-                  csi:
-                    enabled: true
-                  monitoring:
-                    telemetry:
-                      enabled: true
-                    prometheus:
-                      exportMetrics: true
-				  env:
+	    oc apply -f ai-ivp/install/StorageCluster.yaml
 	   ```
 	   
 	 Watch the events to monitor the the Portworx installation. 
@@ -251,65 +199,21 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 
       From the OpenShift Console go to:
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
-	  Apply the following file that will set Portworx as the default storage class. File is located under <project root>/install
-	  
+	  Apply the following file that will set Portworx as the default storage class. File is located under ai-ivp/install
+	- The StorageClass can also be added by running the following command
 	  **`StorageClass.yaml`**
 	  ```
-				allowVolumeExpansion: true
-                apiVersion: storage.k8s.io/v1
-                kind: StorageClass
-                metadata:
-                  labels:
-                    operator.libopenstorage.org/managed-by: portworx
-                  name: pure-fb-nfsv4
-                  annotations:
-                    storageclass.kubernetes.io/is-default-class: 'true'
-                mountOptions:
-                - nfsvers=4.1
-                - tcp
-                parameters:
-                  backend: pure_file
-                  pure_nfs_policy: 'infra-policy'
-                  pure_nfs_server: "infra-server"
-                  pure_nfs_export_rules_access: "no-squash" # TO REMOVE NEEDS TO BE UPDATED ON THE PURE SIDE AND REMOVED HERE 
-                  pure_nfs_export_rules_client: "10.8.0.0/24"
-                provisioner: pxd.portworx.com
-                reclaimPolicy: Delete
-                volumeBindingMode: Immediate           
+	   oc apply -f ai-ivp/install/StorageClass.yaml    
 	  ```
 	  
 7. Install Autoshift
  
    Follow the instructions and requirements to install Autoshift here:  https://github.com/auto-shift/autoshiftv2/blob/main/docs/quickstart.md
-   For Step 4 this is a example of Application File to create and apply. A sample is located under <project-root>/install:
+   For Step 4 this is a example of Application File to create and apply. A sample is located under ai-ivp/install:
    
    **`Application.yaml`**
    ```
-    apiVersion: argoproj.io/v1alpha1
-	kind: Application
-	  name: autoshift
-	  namespace: openshift-gitops
-	spec:
-	  destination:
-		namespace: openshift-gitops
-		server: 'https://kubernetes.default.svc'
-	  project: default
-	  source:
-		helm:
-		  valueFiles:
-			- values/global.yaml
-			- values/clusters/infra.yaml
-			- values/clustersets/hub.yaml
-			- values/clustersets/managed.yaml
-		  values: |-
-			autoshiftGitRepo: https://github.com/CCI-MOC/ai-ivp
-			autoshiftGitBranchTag: main
-		path: autoshift
-		repoURL: 'https://github.com/CCI-MOC/ai-ivp.git'
-		targetRevision: main
-	  syncPolicy:
-		automated:
-		  selfHeal: true
+    oc apply -f ai-ivp/install/Application.yaml
 	```
 	The location of all our clusterset files is located here: https://github.com/CCI-MOC/ai-ivp/tree/feature/staging-standalone/autoshift/values/clustersets
 	PLEASE NOTE: We are currently using hub-minimal.yaml. For autoshift this file is referenced as hub (line 21 in hub-minimal.yaml)
