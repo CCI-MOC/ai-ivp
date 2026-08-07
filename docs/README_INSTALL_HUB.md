@@ -135,65 +135,29 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 ### Post-Openshift Install Setup
 
 - These steps must be performed after the OpenShift cluster install is complete, before Autoshift can be installed.
-  1. Pre-configure the required secrets. 
-     Since there is not a Secrets Mananger the following secrets will be needed to be created manually:
-	 - Create these namespaces: "cert-mananger" and "portworx"
+- `playbooks/post_install_setup.yaml` is a general playbook intended to eventually automate this whole section. Right now it only covers step 1 below -- steps 2, 3, 7, and 8 are still manual, as described further down.
+  1. Pre-configure the required secrets.
 
-         - Create a github client secret
-	 ```
-	 oc create secret generic github-client-secret --from-literal=clientId=<YOUR_GITHUB_ID> --from-literal=clientSecret=<YOUR_GITHUB_CLIENT_SECRET> --from-literal=teamst=<YOUR_GITHUB_CLIENT_TEAMS>-n openshift-config
-	 ```
+     This is automated via `playbooks/post_install_setup.yaml`, which creates the `cert-manager` and `portworx` namespaces and the `github-client-secret`, `px-pure-secret`, and `aws-route53-credentials` secrets described below. It's idempotent (safe to re-run) and pulls its sensitive values from an ansible-vault-encrypted file rather than a Secrets Manager.
 
-         The resulting Secret object should look like this:
+     - The first time you use a given cluster, copy the schema template and fill in real values:
+       ```
+       cp playbooks/vault/examples/post_install_secrets.yaml.example playbooks/vault/<cluster_name>/post_install_secrets.yaml
+       ansible-vault encrypt playbooks/vault/<cluster_name>/post_install_secrets.yaml
+       ```
+       See the file for the exact fields needed: GitHub OAuth app client ID/secret/teams, and AWS access key ID/secret access key for Route53.
+     - `pure.json` is different -- it's provided as-is by the storage admin, so there's no YAML to fill in. Just drop their file in place and encrypt it:
+       ```
+       cp <the pure.json the storage admin gave you> playbooks/vault/<cluster_name>/pure.json
+       ansible-vault encrypt playbooks/vault/<cluster_name>/pure.json
+       ```
+     - Run the playbook (prompts for the vault password; no vault password file is used or stored anywhere in this repo):
+       ```
+       ansible-playbook playbooks/post_install_setup.yaml -e "cluster_name=infra" --ask-vault-pass
+       ```
+     - To change values later, edit with `ansible-vault edit playbooks/vault/<cluster_name>/post_install_secrets.yaml` (or `pure.json`) and re-run the playbook.
 
-	 ```
-	 kind: Secret
-	 apiVersion: v1
-	 metadata:
-	   name: github-client-secret
-	   namespace: openshift-config
-	 stringData:
-	   clientID: <Github Client ID>
-	   clientSecret: <Github Client Secret>
-	   teams: <Teams that are allow in >
-	 type: Opaque
-	  ```
-
-         - Create a pure.json file
-         ```
-         {
-           "FlashBlades": [
-             {
-               "MgmtEndPoint": "10.3.11.50",
-               "APIToken": "<API-TOKEN>",
-               "Realm": "infra-ocp-massopen",
-               "NFSEndPoint": "10.8.0.10"
-             }
-           ]
-         }
-         ``` 
-	 - Create the pure.json secret from the pure.json file under the portworx namespace
-	 ```
-	 oc create secret generic px-pure-secret --from-file=pure.json=<file path> --namespace portworx
-	 ```
-
-	 - Create the aws-route53-credentials secret in the cert-manager namespace. 
-	 ```
-		kind: Secret
-		apiVersion: v1
-		metadata:
-		  name: aws-route53-credentials
-		  namespace: cert-manager
-		stringData:
-		  accessKeyID: <AWS ACCESS KEY>
-		  commonName: <common name for the server, ie *.apps.staging.ocp.massopen.cloud>
-		  dnsNames: <dns that will be controlled by the cert, ie *.apps.staging.ocp.massopen.cloud >
-		  issuer-name: <A name for the issuer, ie letsencrypt-route53-staging>
-		  secret-access-key: <The AWS Secret Access Key>
-		type: Opaque
-
-	 ```
-	 Can also be added by command line like above. 
+     `commonName`, `dnsNames`, and `issuer-name` on the `aws-route53-credentials` secret aren't stored anywhere -- they're derived automatically from `cluster_name`/`base_domain` (e.g. `*.apps.infra.ocp.massopen.cloud`, `letsencrypt-route53-infra`).
 
    2. Install the nmstate operator
       Since before Portworx can communicate with the flash blade servers we need to have some Network Setup configure first. We only need a default nmstate instance so that the CRD resource type can be created.
@@ -201,79 +165,36 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	  - Search for "Nmstate" and click on "Kubernetes NMState Operator". 
 	  - Choose all the default settings and install
 	  - After the Nmstate operator is installed go to it, click on the NMState tab, and create a default instanace of NMState (you do not have to fill out anything). 
-	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine
+	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine. Files are also located under ai-ivp/install
            *Note:* These values work for both staging and infra because they have the same networking for portworx.
+	  - Run the following commands to apply the required files:
+	  
+		**`AdminNetworkPolicy.yaml`**
 	   ```
-	    kind: AdminNetworkPolicy
-		metadata:
-		  name: deny-pure-storage-api
-		spec:
-		  priority: 10
-		  subject:
-			namespaces:
-			  matchExpressions:
-				- key: kubernetes.io/metadata.name
-				  operator: NotIn
-				  values: [portworx]
-			  egress:
-			  - name: deny-pure-api
-				action: Deny
-				to:
-				  - networks:
-					- "10.3.11.50/32"
+		oc apply -f ai-ivp/install/AdminNetworkPolicy.yaml
 	   ```
 		
 	   and
+	   
+	   **`NodeNetworkConfigurationPolicy.yaml`**
 	   ```
-		apiVersion: nmstate.io/v1
-		kind: NodeNetworkConfigurationPolicy
-		metadata:
-		  name: eno1-vlan-2305
-		spec:
-		  desiredState:
-			interfaces:
-			  - name: eno1.2305
-				type: vlan
-				state: up
-				vlan:
-				  base-iface: eno1
-				  id: 2305
-				ipv4:
-				  enabled: true
-				  dhcp: true
-				  auto-gateway: false
-				  auto-routes: false	 
+		oc apply -f ai-ivp/install/NodeNetworkConfigurationPolicy.yaml
 	   ```
 	  
 	  
    3. Install portworx
      In order to install Autoshift we need the ability to create storage. Install and setting up Portworx will give our cluster access to storage on demand. 
 	 - Manually install the Potworx Operator from the Openshift Software Catalog. You can find it on the left side of the Console under Ecosystem -> Software Catalog
-	 - Search for "Portworx" and click on "Portworx Enterprise Operator". You can keep all the default options. 
+	 - Search for "Portworx" and click on "Portworx Enterprise Operator".  Click on Install
+	 - **Change the namespace location to "portworx"**. You can keep all other options to default. 
 	 - After installing go to Ecosystem -> Installed Operators -> Portworx Enterprise. Select "All Projects" on the upper Left-Center to check everwhere. 
-	 - Click on the StorageCluster Tab and create a new StorageCluster
-           *Note:* Thes values work for both staging and infra.
+	 - Click on the StorageCluster Tab and create a new StorageCluster. File is located under ai-ivp/install
+       *Note:* Thes values work for both staging and infra.
+	 - The StorageCluster can also be added by running the following command:
+	 
+	   **`StorageCluster.yaml`**
 	   ```
-	        kind: StorageCluster
-                apiVersion: core.libopenstorage.org/v1
-                metadata:
-                  name: px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015
-                  namespace: portworx
-                  annotations:
-                    portworx.io/install-source: "https://install.portworx.com/26.1?oem=px-csi&operator=true&ce=pure&csi=true&stork=false&kbver=1.34.6&ns=portworx&osft=true&c=px-cluster-642c74a4-bf1c-470d-82bc-9fd32ef30015&tel=true"
-                    portworx.io/is-openshift: "true"
-                    portworx.io/misc-args: "--oem px-csi"
-                spec:
-                  image: portworx/px-pure-csi-driver:26.2.0
-                  imagePullPolicy: Always
-                  csi:
-                    enabled: true
-                  monitoring:
-                    telemetry:
-                      enabled: true
-                    prometheus:
-                      exportMetrics: true
-				  env:
+	    oc apply -f ai-ivp/install/StorageCluster.yaml
 	   ```
 	   
 	 Watch the events to monitor the the Portworx installation. 
@@ -281,60 +202,22 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 
       From the OpenShift Console go to:
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
-	  Apply the following file that will set Portworx as the default storage class. 
+	  Apply the following file that will set Portworx as the default storage class. File is located under ai-ivp/install
+	- The StorageClass can also be added by running the following command:
+	
+	  **`StorageClass.yaml`**
 	  ```
-				allowVolumeExpansion: true
-                apiVersion: storage.k8s.io/v1
-                kind: StorageClass
-                metadata:
-                  labels:
-                    operator.libopenstorage.org/managed-by: portworx
-                  name: pure-fb-nfsv4
-                  annotations:
-                    storageclass.kubernetes.io/is-default-class: 'true'
-                mountOptions:
-                - nfsvers=4.1
-                - tcp
-                parameters:
-                  backend: pure_file
-                  pure_nfs_policy: 'infra-policy'
-                  pure_nfs_server: "infra-server"
-                  # pure_nfs_export_rules_access: "no-squash" # COMMENTED SINCE LAST INSTALL. NEED TO UPDATE ON PURE SIDE.
-                  pure_nfs_export_rules_client: "10.8.0.0/24"
-                provisioner: pxd.portworx.com
-                reclaimPolicy: Delete
-                volumeBindingMode: Immediate           
+	   oc apply -f ai-ivp/install/StorageClass.yaml    
 	  ```
 	  
 7. Install Autoshift
  
    Follow the instructions and requirements to install Autoshift here:  https://github.com/auto-shift/autoshiftv2/blob/main/docs/quickstart.md
-   For Step 4 this is a example of Application File to create and apply:
+   For Step 4 this is a example of Application File to create and apply. A sample is located under ai-ivp/install:
+   
+   **`Application.yaml`**
    ```
-    apiVersion: argoproj.io/v1alpha1
-	kind: Application
-	  name: autoshift
-	  namespace: openshift-gitops
-	spec:
-	  destination:
-		namespace: openshift-gitops
-		server: 'https://kubernetes.default.svc'
-	  project: default
-	  source:
-		helm:
-		  valueFiles:
-			- values/global.yaml
-			- values/clustersets/hub-minimal.yaml
-			- values/clustersets/managed.yaml
-		  values: |-
-			autoshiftGitRepo: https://github.com/CCI-MOC/ai-ivp
-			autoshiftGitBranchTag: main
-		path: autoshift
-		repoURL: 'https://github.com/CCI-MOC/ai-ivp.git'
-		targetRevision: main
-	  syncPolicy:
-		automated:
-		  selfHeal: true
+    oc apply -f ai-ivp/install/Application.yaml
 	```
 	The location of all our clusterset files is located here: https://github.com/CCI-MOC/ai-ivp/tree/feature/staging-standalone/autoshift/values/clustersets
 	PLEASE NOTE: We are currently using hub-minimal.yaml. For autoshift this file is referenced as hub (line 21 in hub-minimal.yaml)

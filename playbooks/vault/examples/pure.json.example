@@ -1,0 +1,10 @@
+{
+  "FlashBlades": [
+    {
+      "MgmtEndPoint": "<Pure FlashBlade management endpoint IP>",
+      "APIToken": "<Pure FlashBlade API token>",
+      "Realm": "<Pure FlashBlade realm>",
+      "NFSEndPoint": "<Pure FlashBlade NFS endpoint IP>"
+    }
+  ]
+}

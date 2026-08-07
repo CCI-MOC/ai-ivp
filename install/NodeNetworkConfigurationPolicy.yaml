@@ -1,0 +1,19 @@
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: eno1-vlan-2305
+spec:
+  desiredState:
+    interfaces:
+      - name: eno1.2305
+        state: up
+        type: vlan
+        vlan:
+          base-iface: eno1
+          id: 2305
+        ipv4:
+          auto-gateway: false
+          auto-routes: false
+          dhcp: true
+          enabled: true
+        

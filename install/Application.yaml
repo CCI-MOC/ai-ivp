@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: autoshift
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: openshift-gitops
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    helm:
+      valueFiles:
+      - values/global.yaml
+	  - values/clusters/infra.yaml
+      - values/clustersets/hub.yaml
+      - values/clustersets/managed.yaml
+      values: |-
+        autoshiftGitRepo: https://github.com/CCI-MOC/ai-ivp
+        autoshiftGitBranchTag: main
+    path: autoshift
+    repoURL: 'https://github.com/CCI-MOC/ai-ivp.git'
+    targetRevision: main
+  syncPolicy:
+    automated:
+      selfHeal: true

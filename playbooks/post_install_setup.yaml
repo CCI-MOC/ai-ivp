@@ -1,0 +1,85 @@
+---
+# Automates the "Post-Openshift Install Setup" section of
+# docs/README_INSTALL_HUB.md. Currently covers step 1 (pre-configure
+# secrets); steps 2/3/7/8 (nmstate operator, portworx, Autoshift, adding
+# users) are not yet automated -- see the TODO markers below.
+#
+# Sensitive values live in playbooks/vault/<cluster_name>/:
+#   - post_install_secrets.yaml -- GitHub OAuth + AWS Route53 fields,
+#     ansible-vault-encrypted, loaded explicitly below via vars_files.
+#   - pure.json -- the file as provided by the storage admin, copied and 
+#   ansible-vault-encrypted in place.
+# Run this playbook with --ask-vault-pass
+- name: Post-OpenShift install setup
+  hosts: "{{ cluster_name }}"
+  connection: local
+  vars_files:
+    - "vault/{{ cluster_name }}/post_install_secrets.yaml"
+  vars:
+    kubeconfig_path: "{{ playbook_dir }}/output/{{ cluster_name }}/work/auth/kubeconfig"
+  environment:
+    KUBECONFIG: "{{ kubeconfig_path }}"
+
+  tasks:
+    # --- Step 1: Pre-configure the required secrets ---
+    - name: Ensure required namespaces exist
+      ansible.builtin.shell: |
+        oc create namespace {{ item }} --dry-run=client -o yaml | oc apply -f -
+      register: ns_result
+      changed_when: "'created' in ns_result.stdout"
+      loop:
+        - cert-manager
+        - portworx
+
+    - name: Create github-client-secret
+      ansible.builtin.shell: |
+        oc create secret generic github-client-secret \
+          --from-literal=clientID='{{ github_client_id }}' \
+          --from-literal=clientSecret='{{ github_client_secret }}' \
+          --from-literal=teams='{{ github_client_teams }}' \
+          --namespace openshift-config \
+          --dry-run=client -o yaml | oc apply -f -
+      register: github_secret_result
+      changed_when: "'created' in github_secret_result.stdout or 'configured' in github_secret_result.stdout"
+      no_log: true
+
+    - name: Copy pure.json
+      # pure.json comes as-is from the storage admin -- see
+      # playbooks/vault/<cluster_name>/pure.json.
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/vault/{{ cluster_name }}/pure.json"
+        dest: "{{ playbook_dir }}/output/{{ cluster_name }}/pure.json"
+        mode: '0600'
+      no_log: true
+
+    - name: Create px-pure-secret
+      ansible.builtin.shell: |
+        oc create secret generic px-pure-secret \
+          --from-file=pure.json={{ playbook_dir }}/output/{{ cluster_name }}/pure.json \
+          --namespace portworx \
+          --dry-run=client -o yaml | oc apply -f -
+      register: pure_secret_result
+      changed_when: "'created' in pure_secret_result.stdout or 'configured' in pure_secret_result.stdout"
+      no_log: true
+
+    - name: Create aws-route53-credentials secret
+      # commonName/dnsNames/issuer-name aren't sensitive -- derived from
+      # cluster_name/base_domain rather than stored in the vault file.
+      ansible.builtin.shell: |
+        oc create secret generic aws-route53-credentials \
+          --from-literal=accessKeyID='{{ aws_access_key_id }}' \
+          --from-literal=commonName='*.apps.{{ cluster_name }}.{{ base_domain }}' \
+          --from-literal=dnsNames='*.apps.{{ cluster_name }}.{{ base_domain }}' \
+          --from-literal=issuer-name='letsencrypt-route53-{{ cluster_name }}' \
+          --from-literal=hostedZoneID='{{ hostedZoneID }}' \
+          --from-literal=secret-access-key='{{ aws_secret_access_key }}' \
+          --namespace cert-manager \
+          --dry-run=client -o yaml | oc apply -f -
+      register: aws_secret_result
+      changed_when: "'created' in aws_secret_result.stdout or 'configured' in aws_secret_result.stdout"
+      no_log: true
+
+    # TODO: Step 2 -- Install the nmstate operator (not yet automated)
+    # TODO: Step 3 -- Install portworx (not yet automated)
+    # TODO: Step 7 -- Install Autoshift (not yet automated)
+    # TODO: Step 8 -- Adding Users (not yet automated)
