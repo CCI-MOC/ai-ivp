@@ -167,6 +167,7 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine. Files are also located under ai-ivp/install
            *Note:* These values work for both staging and infra because they have the same networking for portworx.
 	  - Run the following commands to apply the required files:
+	  
 		**`AdminNetworkPolicy.yaml`**
 	   ```
 		oc apply -f ai-ivp/install/AdminNetworkPolicy.yaml
@@ -188,7 +189,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	 - After installing go to Ecosystem -> Installed Operators -> Portworx Enterprise. Select "All Projects" on the upper Left-Center to check everwhere. 
 	 - Click on the StorageCluster Tab and create a new StorageCluster. File is located under ai-ivp/install
        *Note:* Thes values work for both staging and infra.
-	 - The StorageCluster can also be added by running the following command
+	 - The StorageCluster can also be added by running the following command:
+	 
 	   **`StorageCluster.yaml`**
 	   ```
 	    oc apply -f ai-ivp/install/StorageCluster.yaml
@@ -200,7 +202,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
       From the OpenShift Console go to:
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
 	  Apply the following file that will set Portworx as the default storage class. File is located under ai-ivp/install
-	- The StorageClass can also be added by running the following command
+	- The StorageClass can also be added by running the following command:
+	
 	  **`StorageClass.yaml`**
 	  ```
 	   oc apply -f ai-ivp/install/StorageClass.yaml    
