@@ -166,7 +166,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	  - After the Nmstate operator is installed go to it, click on the NMState tab, and create a default instanace of NMState (you do not have to fill out anything). 
 	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine. Files are also located under <project root>/install
            *Note:* These values work for both staging and infra because they have the same networking for portworx.
-	    AdminNetworkPolicy.yaml
+	    
+		**`AdminNetworkPolicy.yaml`**
 	   ```
 	    kind: AdminNetworkPolicy
 		apiVersion: policy.networking.k8s.io/v1alpha1 
@@ -189,7 +190,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	   ```
 		
 	   and
-	   NodeNetworkConfigurationPolicy.yaml
+	   
+	   **`NodeNetworkConfigurationPolicy.yaml`**
 	   ```
 		apiVersion: nmstate.io/v1
 		kind: NodeNetworkConfigurationPolicy
@@ -219,7 +221,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	 - After installing go to Ecosystem -> Installed Operators -> Portworx Enterprise. Select "All Projects" on the upper Left-Center to check everwhere. 
 	 - Click on the StorageCluster Tab and create a new StorageCluster. File is located under <project root>/install
            *Note:* Thes values work for both staging and infra.
-	   StorageCluster.yaml
+	   
+	   **`StorageCluster.yaml`**
 	   ```
 	        kind: StorageCluster
                 apiVersion: core.libopenstorage.org/v1
@@ -249,7 +252,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
       From the OpenShift Console go to:
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
 	  Apply the following file that will set Portworx as the default storage class. File is located under <project root>/install
-	  StorageClass.yaml
+	  
+	  **`StorageClass.yaml`**
 	  ```
 				allowVolumeExpansion: true
                 apiVersion: storage.k8s.io/v1
@@ -278,7 +282,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
  
    Follow the instructions and requirements to install Autoshift here:  https://github.com/auto-shift/autoshiftv2/blob/main/docs/quickstart.md
    For Step 4 this is a example of Application File to create and apply. A sample is located under <project-root>/install:
-   Application.yaml
+   
+   **`Application.yaml`**
    ```
     apiVersion: argoproj.io/v1alpha1
 	kind: Application
