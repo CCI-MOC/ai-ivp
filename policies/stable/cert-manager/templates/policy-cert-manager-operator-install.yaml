@@ -100,7 +100,7 @@ spec:
                     - dns01:
                         route53:
                           region: us-east-1      
-                          #accessKeyID: {{ .Values.certManager.issuer.accessKeyID }}
+                          hostedZoneID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "hostedZoneID" | base64dec {{ "}}" }}'
                           accessKeyID: '{{ "{{" }} fromSecret "cert-manager" "aws-route53-credentials" "accessKeyID" | base64dec {{ "}}" }}'
                           secretAccessKeySecretRef:
                             name: {{ .Values.certManager.issuer.secretAccessKeySecretRef.name }}

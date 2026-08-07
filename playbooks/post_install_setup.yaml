@@ -71,6 +71,7 @@
           --from-literal=commonName='*.apps.{{ cluster_name }}.{{ base_domain }}' \
           --from-literal=dnsNames='*.apps.{{ cluster_name }}.{{ base_domain }}' \
           --from-literal=issuer-name='letsencrypt-route53-{{ cluster_name }}' \
+          --from-literal=hostedZoneID='{{ hostedZoneID }}' \
           --from-literal=secret-access-key='{{ aws_secret_access_key }}' \
           --namespace cert-manager \
           --dry-run=client -o yaml | oc apply -f -

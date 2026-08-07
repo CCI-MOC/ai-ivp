@@ -164,10 +164,12 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	  - Search for "Nmstate" and click on "Kubernetes NMState Operator". 
 	  - Choose all the default settings and install
 	  - After the Nmstate operator is installed go to it, click on the NMState tab, and create a default instanace of NMState (you do not have to fill out anything). 
-	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine
+	  - Apply the follwing files using oc apply -f <filename> after downloading them to a local machine. Files are also located under <project root>/install
            *Note:* These values work for both staging and infra because they have the same networking for portworx.
+	    AdminNetworkPolicy.yaml
 	   ```
 	    kind: AdminNetworkPolicy
+		apiVersion: policy.networking.k8s.io/v1alpha1 
 		metadata:
 		  name: deny-pure-storage-api
 		spec:
@@ -187,6 +189,7 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	   ```
 		
 	   and
+	   NodeNetworkConfigurationPolicy.yaml
 	   ```
 		apiVersion: nmstate.io/v1
 		kind: NodeNetworkConfigurationPolicy
@@ -214,8 +217,9 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 	 - Manually install the Potworx Operator from the Openshift Software Catalog. You can find it on the left side of the Console under Ecosystem -> Software Catalog
 	 - Search for "Portworx" and click on "Portworx Enterprise Operator". You can keep all the default options. 
 	 - After installing go to Ecosystem -> Installed Operators -> Portworx Enterprise. Select "All Projects" on the upper Left-Center to check everwhere. 
-	 - Click on the StorageCluster Tab and create a new StorageCluster
+	 - Click on the StorageCluster Tab and create a new StorageCluster. File is located under <project root>/install
            *Note:* Thes values work for both staging and infra.
+	   StorageCluster.yaml
 	   ```
 	        kind: StorageCluster
                 apiVersion: core.libopenstorage.org/v1
@@ -245,6 +249,7 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
       From the OpenShift Console go to:
 	  Storage -> StorageClasses and click on the blue Create StorageClass button on the upper right. 
 	  Apply the following file that will set Portworx as the default storage class. 
+	  StorageClass.yaml
 	  ```
 				allowVolumeExpansion: true
                 apiVersion: storage.k8s.io/v1
@@ -262,7 +267,7 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
                   backend: pure_file
                   pure_nfs_policy: 'infra-policy'
                   pure_nfs_server: "infra-server"
-                  # pure_nfs_export_rules_access: "no-squash" # COMMENTED SINCE LAST INSTALL. NEED TO UPDATE ON PURE SIDE.
+                  pure_nfs_export_rules_access: "no-squash" # TO REMOVE NEEDS TO BE UPDATED ON THE PURE SIDE AND REMOVED HERE 
                   pure_nfs_export_rules_client: "10.8.0.0/24"
                 provisioner: pxd.portworx.com
                 reclaimPolicy: Delete
@@ -272,7 +277,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 7. Install Autoshift
  
    Follow the instructions and requirements to install Autoshift here:  https://github.com/auto-shift/autoshiftv2/blob/main/docs/quickstart.md
-   For Step 4 this is a example of Application File to create and apply:
+   For Step 4 this is a example of Application File to create and apply. A sample is located under <project-root>/install:
+   Application.yaml
    ```
     apiVersion: argoproj.io/v1alpha1
 	kind: Application
@@ -287,7 +293,8 @@ ssh -i /root/ssh/id_rsa_ocp core@<node IP>
 		helm:
 		  valueFiles:
 			- values/global.yaml
-			- values/clustersets/hub-minimal.yaml
+			- values/clusters/infra.yaml
+			- values/clustersets/hub.yaml
 			- values/clustersets/managed.yaml
 		  values: |-
 			autoshiftGitRepo: https://github.com/CCI-MOC/ai-ivp
