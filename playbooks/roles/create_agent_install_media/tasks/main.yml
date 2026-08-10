@@ -96,7 +96,7 @@
     - { src: openshift/98-master-var-lib-etcd.yaml, dest: 98-master-var-lib-etcd.yaml }
 
 - name: Create manifests from generated files
-  ansible.builtin.command: openshift-install-fips agent create cluster-manifests --dir {{ work_dir }}
+  ansible.builtin.command: "{{ openshift_install }} agent create cluster-manifests --dir {{ work_dir }}"
 
 - name: Insert TPM configuration into agent-cluster-install.yaml
   ansible.builtin.blockinfile:
@@ -116,14 +116,14 @@
 - name: Generate the Agent ISO
   # Use the absolute path or ensure openshift-install is in your $PATH
   ansible.builtin.command:
-    cmd: "openshift-install-fips agent create image --dir {{ work_dir }} --log-level debug"
+    cmd: "{{ openshift_install }} agent create image --dir {{ work_dir }} --log-level debug"
   register: iso_generation
   changed_when: true
   when: boot_method == 'iso'
 
 - name: Generate the Agent PXE boot files
   ansible.builtin.command:
-    cmd: "openshift-install-fips agent create pxe-files --dir {{ work_dir }} --log-level debug"
+    cmd: "{{ openshift_install }} agent create pxe-files --dir {{ work_dir }} --log-level debug"
   register: pxe_generation
   changed_when: true
   when: boot_method == 'pxe'
