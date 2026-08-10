@@ -1,0 +1,61 @@
+---
+cluster_domain_name: infra
+base_domain: oac.int.massopen.cloud
+
+# install_drive_serial/etcd_drive_wwn confirmed via
+# `lsblk -o NAME,SIZE,SERIAL,WWN` against the live master nodes. etcd_drive_wwn
+# is matched by hostname in 98-master-var-lib-etcd.j2, resolved via
+# /dev/disk/by-id/wwn-<value>. etcd_drive_wwn MUST be quoted -- YAML parses an
+# unquoted 0x... value as a hex integer, and Jinja renders it back in decimal.
+# host info for MOC-R4PAC22U17-S1
+master1_hostname: "moc-r4pac22u17-s1"
+master1_ip: "10.20.2.141"
+master1_mac: "b8:59:9f:12:b9:c0"
+master1_install_drive_serial: "S40ENX0M601814"
+master1_etcd_drive_wwn: "0x5002538b496fd6a0"
+# host info for MOC-R4PAC22U17-S1
+# host info for MOC-R4PAC22U15-S1
+master2_hostname: "moc-r4pac22u15-s1"
+master2_ip: "10.20.2.206"
+master2_mac: "b8:59:9f:1a:ca:2e"
+master2_install_drive_serial: "S40ENX0M809390"
+master2_etcd_drive_wwn: "0x5002538b498a88a0"
+# host info for MOC-R4PAC22U15-S1
+# host info for MOC-R4PAC08U05-S3
+master3_hostname: "moc-r4pac08u05-s3"
+master3_ip: "10.20.2.110"
+master3_mac: "7c:fe:90:cb:74:1a"
+master3_install_drive_serial: "75V2BEWX"
+master3_etcd_drive_wwn: "0x5000cca0a0048bc8"
+# host info for MOC-R4PAC08U05-S3
+
+# Confirmed via oc debug against the live master nodes (br-ex: 10.11.0.21/24).
+machine_network: 10.20.2.0/23
+
+# Design decision. Does not need verified in live environment.
+rendezvous_ip: 10.20.2.141
+
+# gateway_ip/dns_ip confirmed via `ip route show default` and /etc/resolv.conf
+# on the live master nodes. cluster_network/svc_network confirmed against the
+# live `oc get network.config cluster -o yaml`.
+gateway_ip: 10.20.2.1
+dns_ip: 8.8.8.8
+cluster_network: 10.128.0.0/14
+svc_network: 172.30.0.0/16
+
+# NOT WORKING: `chronyc sources` on the live cluster shows this
+# marked ^x (falseticker, ~2931ms offset) -- it's not actually being used for
+# sync. The cluster is really getting time from public pool servers instead.
+# Left as-is until we can fix the NTP server or decide to drop it.
+ntp: us.pool.ntp.org
+
+# Confirmed to match DNS records via dig from bastion
+api_ip: 10.20.3.11
+ingress_ip: 10.20.3.12
+
+fips_enabled: false
+diskencryption_mode: ""
+
+# Public key -- not sensitive, safe to track in plain YAML.
+ssh_public_key: >-
+  {{ lookup("ansible.builtin.file", [playbook_dir, "credentials", "oac-infra", "oac-infra-key.pub"]|join("/")) }}

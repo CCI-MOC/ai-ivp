@@ -12,3 +12,7 @@ all:
       hosts:
         staging-cluster:
           ansible_connection: local
+    oac-infra:
+      hosts:
+        oac-infra:
+          ansible_connection: local
