@@ -30,6 +30,7 @@
           - tar
           - bind-utils
           - httpd
+          - python3-netaddr
         state: present
 
     - name: Start and enable Apache (httpd)
