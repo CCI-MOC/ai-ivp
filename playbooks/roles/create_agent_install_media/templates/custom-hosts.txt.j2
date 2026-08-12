@@ -2,8 +2,8 @@
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
 # Rendezvous / API VIPs
-{{ api_ip }}      api.{{ cluster_name }}.{{ base_domain }} api-int.{{ cluster_name }}.{{ base_domain }}
-{{ ingress_ip }}      console-openshift-console.apps.{{ cluster_name }}.{{ base_domain }}
+{{ api_ip }}      api.{{ cluster_domain_name|default(cluster_name) }}.{{ base_domain }} api-int.{{ cluster_domain_name|default(cluster_name) }}.{{ base_domain }}
+{{ ingress_ip }}      console-openshift-console.apps.{{ cluster_domain_name|default(cluster_name) }}.{{ base_domain }}
 
 # OpenShift Nodes
 {{ master1_ip }}        {{ master1_hostname }}
