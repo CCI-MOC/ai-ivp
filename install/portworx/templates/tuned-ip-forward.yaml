@@ -1,0 +1,22 @@
+{{- if .Values.routingViaHost.enabled }}
+apiVersion: tuned.openshift.io/v1
+kind: Tuned
+metadata:
+  name: ip-forward
+  namespace: openshift-cluster-node-tuning-operator
+spec:
+  profile:
+    - name: ip-forward
+      data: |
+        [main]
+        summary=Enable IP forwarding in the global network namespace
+        include=openshift-control-plane
+
+        [sysctl]
+        net.ipv4.ip_forward=1
+  recommend:
+    - profile: ip-forward
+      priority: 20
+      match:
+        - label: node-role.kubernetes.io/master
+{{- end }}

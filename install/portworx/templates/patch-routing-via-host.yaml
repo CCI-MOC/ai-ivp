@@ -1,0 +1,68 @@
+{{- if .Values.routingViaHost.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: patch-routing-via-host
+  namespace: "{{ .Values.targetNamespace | default .Release.Namespace }}"
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: patch-routing-via-host
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+rules:
+  - apiGroups: ["operator.openshift.io"]
+    resources: ["networks"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: patch-routing-via-host
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: patch-routing-via-host
+subjects:
+  - kind: ServiceAccount
+    name: patch-routing-via-host
+    namespace: "{{ .Values.targetNamespace | default .Release.Namespace }}"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: patch-routing-via-host
+  namespace: "{{ .Values.targetNamespace | default .Release.Namespace }}"
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: patch-routing-via-host
+      containers:
+        - name: patch
+          image: "{{ .Values.routingViaHost.image }}"
+          command:
+            - oc
+            - patch
+            - networks.operator.openshift.io
+            - cluster
+            - --type=merge
+            - -p
+            - '{"spec":{"defaultNetwork":{"ovnKubernetesConfig":{"gatewayConfig":{"routingViaHost":true}}}}}'
+{{- end }}
