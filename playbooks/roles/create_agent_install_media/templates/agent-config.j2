@@ -1,7 +1,7 @@
 apiVersion: v1alpha1
 kind: AgentConfig
 metadata:
-  name: {{ cluster_name }}
+  name: {{ cluster_domain_name|default(cluster_name) }}
 rendezvousIP: {{ rendezvous_ip }}
 additionalNTPSources:
   - {{ ntp }}
