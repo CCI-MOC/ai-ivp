@@ -99,6 +99,8 @@
   ansible.builtin.command: "{{ openshift_install }} agent create cluster-manifests --dir {{ work_dir }}"
 
 - name: Insert TPM configuration into agent-cluster-install.yaml
+  when: >-
+    diskencryption_mode == "tpmv2"
   ansible.builtin.blockinfile:
     path: "{{ work_dir }}/cluster-manifests/agent-cluster-install.yaml"
     insertafter: '^\s*spec:\s*$'

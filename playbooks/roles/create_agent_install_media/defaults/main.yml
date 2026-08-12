@@ -6,3 +6,4 @@
 # for network booting instead. Override with -e boot_method=pxe.
 boot_method: iso
 openshift_install: "{% if fips_enabled|bool %}openshift-install-fips{% else %}openshift-install{% endif %}"
+diskencryption_mode: tpmv2
