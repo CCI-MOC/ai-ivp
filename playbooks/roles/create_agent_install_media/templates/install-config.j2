@@ -17,7 +17,7 @@ networking:
   - {{ svc_network }}
 fips: {{ fips_enabled }}
 metadata:
-  name: {{ cluster_name }}
+  name: {{ cluster_domain_name|default(cluster_name) }}
 pullSecret: '{{ pull_secret }}'
 sshKey: '{{ ssh_public_key }}'
 platform:
