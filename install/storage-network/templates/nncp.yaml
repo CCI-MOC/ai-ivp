@@ -1,0 +1,33 @@
+{{ range .Values.nodes }}
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: br-storage-{{ .name }}
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: {{ .name }}
+  desiredState:
+    interfaces:
+      - name: {{ .interface }}
+        type: ethernet
+        state: up
+        ipv4:
+          enabled: false
+        ipv6:
+          enabled: false
+      - name: br-storage
+        type: linux-bridge
+        state: up
+        ipv4:
+          enabled: true
+          dhcp: true
+        ipv6:
+          enabled: false
+        bridge:
+          options:
+            stp:
+              enabled: false
+          port:
+            - name: {{ .interface }}
+---
+{{ end }}

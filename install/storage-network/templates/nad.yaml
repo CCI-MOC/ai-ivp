@@ -1,0 +1,20 @@
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: storage-network
+  namespace: portworx
+spec:
+  config: |-
+    {
+      "cniVersion": "0.3.1",
+      "name": "{{ .Values.bridge.name }}",
+      "type": "bridge",
+      "bridge": "{{ .Values.bridge.name }}",
+      "ipam": {
+        "type": "whereabouts",
+        "range": "{{ .Values.network.cidr }}",
+        "range_start": "{{ .Values.network.range.start }}",
+        "range_end": "{{ .Values.network.range.end }}",
+        "routes": {{ .Values.network.routes | toJson }}
+      }
+    }
