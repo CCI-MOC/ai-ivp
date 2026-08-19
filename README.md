@@ -47,7 +47,7 @@ Current hardware has 2×10 GbE NICs per node. New hardware will have multiple 10
 
 ##### Initial Design (2×10 GbE NICs)
 
-![Initial VLAN Design ](/diagrams/architecture-diagrams-VLANs_Option1.drawio.png)
+![Initial VLAN Design ](/diagrams/architecture-diagrams-VLANs.drawio.png)
 
 Each node will have two NICs:
 
