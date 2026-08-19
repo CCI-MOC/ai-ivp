@@ -8,6 +8,10 @@ Infrastructure as code is included to deploy the pattern in a repeatable fashion
 
 ## Deployment
 
+This diagram shows the environments in the system.
+
+![Environments Diagram](/diagrams/architecture-diagrams-Environments.drawio.png)
+
 This deployment diagram shows the components of the system and how they are deployed.
 
 ![Logical Deployment Diagram](/diagrams/architecture-diagrams-HCP_Logical_Deployment_Diagram.drawio.png)
@@ -47,7 +51,7 @@ Current hardware has 2×10 GbE NICs per node. New hardware will have multiple 10
 
 ##### Initial Design (2×10 GbE NICs)
 
-![Initial VLAN Design ](/diagrams/architecture-diagrams-VLANs_Option1.drawio.png)
+![Initial VLAN Design ](/diagrams/architecture-diagrams-VLANs.drawio.png)
 
 Each node will have two NICs:
 
