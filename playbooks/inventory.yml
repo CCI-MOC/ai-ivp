@@ -16,3 +16,7 @@ all:
       hosts:
         oac-infra:
           ansible_connection: local
+    oac-prod-infra:
+      hosts:
+        oac-prod-infra:
+          ansible_connection: local

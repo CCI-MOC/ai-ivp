@@ -87,3 +87,84 @@ hosts:
         config:
           server:
             - {{ dns_ip }}
+  - hostname: {{ worker1_hostname }}
+    role: worker
+    rootDeviceHints:
+      serialNumber: {{ worker1_install_drive_serial }}
+    interfaces:
+      - name: eno1
+        macAddress: {{ worker1_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ worker1_ip }}
+                prefix-length: {{ machine_network | ansible.utils.ipaddr('prefix') }}
+            dhcp: false
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}
+            next-hop-interface: eno1
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}
+  - hostname: {{ worker2_hostname }}
+    role: worker
+    rootDeviceHints:
+      serialNumber: {{ worker2_install_drive_serial }}
+    interfaces:
+      - name: eno1
+        macAddress: {{ worker2_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ worker2_ip }}
+                prefix-length: {{ machine_network | ansible.utils.ipaddr('prefix') }}
+            dhcp: false
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}
+            next-hop-interface: eno1
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}
+  - hostname: {{ worker3_hostname }}
+    role: worker
+    rootDeviceHints:
+      serialNumber: {{ worker3_install_drive_serial }}
+    interfaces:
+      - name: eno1
+        macAddress: {{ worker3_mac }}
+    networkConfig:
+      interfaces:
+        - name: eno1
+          type: ethernet
+          state: up
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{ worker3_ip }}
+                prefix-length: {{ machine_network | ansible.utils.ipaddr('prefix') }}
+            dhcp: false
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: {{ gateway_ip }}
+            next-hop-interface: eno1
+      dns-resolver:
+        config:
+          server:
+            - {{ dns_ip }}

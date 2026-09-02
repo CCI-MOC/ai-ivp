@@ -13,3 +13,11 @@ bastion_users:
     ssh_key: |
       ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCt6bEbDunOQuL72HrEIPpK2LBWpBcraSe6+r6ovGaiiIvquKclalJbr6Okotlz95o15M1pZnBCKQlnGhcwr2cZhrAy7lR1+vw5KnD9lN/yW/b7iuQusvC5rs2TDeH9IhPHHIMl4A2io0urAUXRJ2RlgDzSacSz4sspaq4I10GsWaVahs4gN+MyDde3tkkwUnWjGVYrFJSRP5crfMeftTphhcc/zSB3Z5wQ2wwog9FkaZIYOWnPYeSoPDBWVbJagctzRTkimYCoczY/YGxTliZj2uTpfxDZrYhlOL8dZxH2JfGzduIl4Zf3isdiykoFNOdTuhUe2+B9qoKf2WnIdBOH
       ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOlco2dwIt04NB/40dHKGlsE7ftL6415JFk/o4w7UYPc
+  - username: naved
+    fullname: Naved Ansari
+    ssh_key: |
+      ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDwxZw52X4wl4PT2gQwjxg8LnLcAc7R+kNFVYkxbsTO89jWhjK7J+Giz+gUNOioBz4IY6/5SCd0tGYFCp4m0F7a8Pp9JRr8aEtpzjaC6LTtD17UxK5+IJxxKCaF3FZ6yvWGU77umvm3oRszv+2rILqSLUjgc//LyaaIasgV2HIbOCUkgwynEBrEDhH2Ma5Ie8z+9u7M63xvUXrYsp0a5otTepjb+8CELq9qO+/xJeWBGhl7F1uUTD3b+eemqntIAr/G/30UNE9TpHsTlVTTnhaMmIz233U9Kz2aGt14UraLvI7u7dhPgJ2R0JQTXrdJjA97Rk/CrRy/gquy8/m4MzCt
+  - username: skanthed
+    fullname: Surbhi Kanthed
+    ssh_key: |
+      ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/kCb5pMrv+nY36aFHyyS0z6IaZp+nnID+IJhOF+BHfy78RkB8vOVLC0D/BS8C/y1seWA/0xsIlgU2iatA8NXAKz4vi/6G7WwQ8Cnl3RyEO6o2LfJblJOmbocsj8LyqQlEgWZMYQtpY913d7m99dJ6merN+40Nn1um/s15AP8ymeVGBjLZW3q/siC21BBHeI3FDGPfYfDTlM+djag0ku/7cG6VEH5Bvke0Ins6R5u0n45FbXpS9c2IAM19nQ5ap0fCWwpcxj5iQ6bSBuNBu7/8BZ56ftEvqhbboaMP+BlORmAsfJ/owuTW1ER+BNblXvP36XR+73zc/wiZy6uVYPdjXZRT24/XDk/55N49bV0rY63xKmHiCsteq6rSDpodlAUrz/L3YertR9d4GnjHDPWLP5lRMEwuR2grqoofJk5ZmwMaQZ0GV3HBW2LBi8lQ+m5WT1kEQvFEXGY6EZx6PZ6uk23+K3Xeag90YZtKrHXURsQJmPz9UaIXTTI9hrQbRHc= surbhikanthed@localhost.localdomain
