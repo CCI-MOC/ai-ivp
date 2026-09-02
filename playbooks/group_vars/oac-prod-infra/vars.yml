@@ -1,0 +1,79 @@
+---
+cluster_domain_name: infra
+base_domain: oac.ocp.massopen.cloud
+
+# install_drive_serial/etcd_drive_wwn confirmed via
+# `lsblk -o NAME,SIZE,SERIAL,WWN` against the live master nodes. etcd_drive_wwn
+# is matched by hostname in 98-master-var-lib-etcd.j2, resolved via
+# /dev/disk/by-id/wwn-<value>. etcd_drive_wwn MUST be quoted -- YAML parses an
+# unquoted 0x... value as a hex integer, and Jinja renders it back in decimal.
+
+# host info for MOC-R4PAC10U33-S1A
+master1_hostname: "moc-r4pac10u33-s1a"
+master1_ip: "10.20.8.22"
+master1_mac: "a8:99:69:8a:97:41"
+master1_install_drive_serial: "BTHC714605C8200QGN"
+master1_etcd_drive_wwn: "0x55cd2e414db91ad7"
+
+# host info for MOC-R4PAC10U35-S3B 
+master2_hostname: "moc-r4pac10u35-s3b"
+master2_ip: "10.20.8.20"
+master2_mac: "a8:99:69:89:67:5d"
+master2_install_drive_serial: "184S101MTCRT"
+master2_etcd_drive_wwn: "0x500080d910edcf14"
+
+# host info for MOC-R4PAC10U37-S3C
+master3_hostname: "moc-r4pac10u37-s3c"
+master3_ip: "10.20.8.21"
+master3_mac: "40:5c:fd:65:f3:83"
+master3_install_drive_serial: "BTHC650601RH200QGN"
+master3_etcd_drive_wwn: "0x55cd2e414d90b89d"
+
+# host info for MOC-R4PAC10U19-S1
+worker1_hostname: "moc-r4pac10u19-s1"
+worker1_ip: "10.20.8.51"
+worker1_mac: "24:8a:07:1e:2e:2e"
+worker1_install_drive_serial: "S3FXNX0K301213"
+
+# host info for MOC-R4PAC10U11-S3
+worker2_hostname: "moc-r4pac10u11-s3"
+worker2_ip: "10.20.8.52"
+worker2_mac: "24:8a:07:1e:2b:d6"
+worker2_install_drive_serial: "S40ENX0M806377"
+
+# host info for MOC-R4PAC10U09-S3
+worker3_hostname: "moc-r4pac10u09-s3"
+worker3_ip: "10.20.8.53"
+worker3_mac: "24:8a:07:1e:2e:1a"
+worker3_install_drive_serial: "75V2HUJX"
+
+# Confirmed via oc debug against the live master nodes (br-ex: 10.11.0.21/24).
+machine_network: 10.20.8.0/23
+
+# Design decision. Does not need verified in live environment.
+rendezvous_ip: 10.20.8.20
+
+# gateway_ip/dns_ip confirmed via `ip route show default` and /etc/resolv.conf
+# on the live master nodes. cluster_network/svc_network confirmed against the
+# live `oc get network.config cluster -o yaml`.
+gateway_ip: 10.20.8.1
+dns_ip: 8.8.8.8
+cluster_network: 10.128.0.0/14
+svc_network: 172.30.0.0/16
+
+# NOT WORKING: `chronyc sources` on the live cluster shows this
+# marked ^x (falseticker, ~2931ms offset) -- it's not actually being used for
+# sync. The cluster is really getting time from public pool servers instead.
+# Left as-is until we can fix the NTP server or decide to drop it.
+ntp: us.pool.ntp.org
+
+# Confirmed to match DNS records via dig from bastion
+api_ip: 10.20.9.11
+ingress_ip: 10.20.9.12
+
+fips_enabled: false
+diskencryption_mode: ""
+
+# Public key -- not sensitive, safe to track in plain YAML.
+ssh_public_key: >-
+  {{ lookup("ansible.builtin.file", [playbook_dir, "credentials", "oac-prod-infra", "oac-prod-infra-key.pub"]|join("/")) }}
